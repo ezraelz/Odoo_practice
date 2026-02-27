@@ -1,0 +1,40 @@
+<odoo>
+    <record id="equipment_tree" model="ir.ui.view">
+        <field name="name">equipment.tracker.tree</field>
+        <field name="model">equipment.tracker</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="equipment_form" model="ir.ui.view">
+        <field name="name">equipment.tracker.form</field>
+        <field name="model">equipment.tracker</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="serial_number"/>
+                        <field name="customer_id"/>
+                        <field name="purchase_date"/>
+                        <field name="state"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="equipment_action" model="ir.actions.act_window">
+        <field name="name">Equipment</field>
+        <field name="res_model">equipment.tracker</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="equipment_root" name="Equipment"/>
+    <menuitem id="equipment_menu" parent="equipment_root" action="equipment_action"/>
+</odoo>
