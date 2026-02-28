@@ -1,7 +1,7 @@
 from odoo import models, fields
 
-class Equipment(models.Model):
-    _name = 'equipment.tracker.equipment'
+class EquipmentTracker(models.Model):
+    _name = 'equipment.tracker'
     _description = 'Customer Equipment'
 
     name = fields.Char(required=True)

@@ -9,5 +9,6 @@
         "views/equipment_views.xml",
     ],
     "application": True,
+    "auto_install": False,
     "installable": True,
 }
