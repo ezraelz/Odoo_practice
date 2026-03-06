@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="report_offer_template_1" model="ir.actions.report">
+        <field name="name">Job Offer - Template 1</field>
+        <field name="model">job.offer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">job_offer.offer_template_1</field>
+        <field name="report_file">job_offer.offer_template_1</field>
+        <field name="binding_model_id" ref="model_job_offer"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="report_offer_template_2" model="ir.actions.report">
+        <field name="name">Job Offer - Template 2</field>
+        <field name="model">job.offer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">job_offer.offer_template_2</field>
+        <field name="report_file">job_offer.offer_template_2</field>
+        <field name="binding_model_id" ref="model_job_offer"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="report_offer_template_3" model="ir.actions.report">
+        <field name="name">Job Offer - Template 3</field>
+        <field name="model">job.offer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">job_offer.offer_template_3</field>
+        <field name="report_file">job_offer.offer_template_3</field>
+        <field name="binding_model_id" ref="model_job_offer"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="report_offer_template_4" model="ir.actions.report">
+        <field name="name">Job Offer - Template 4</field>
+        <field name="model">job.offer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">job_offer.offer_template_4</field>
+        <field name="report_file">job_offer.offer_template_4</field>
+        <field name="binding_model_id" ref="model_job_offer"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="report_offer_template_5" model="ir.actions.report">
+        <field name="name">Job Offer - Template 5</field>
+        <field name="model">job.offer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">job_offer.offer_template_5</field>
+        <field name="report_file">job_offer.offer_template_5</field>
+        <field name="binding_model_id" ref="model_job_offer"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

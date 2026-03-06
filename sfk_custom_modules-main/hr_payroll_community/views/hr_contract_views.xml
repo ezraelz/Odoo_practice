@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root Menus -->
+    <menuitem id="menu_hr_payroll_community_root" name="Payroll" sequence="45"
+              web_icon="hr_payroll_community,static/description/icon.png"/>
+    <menuitem id="menu_hr_payroll_community_configuration" name="Configuration"
+              parent="menu_hr_payroll_community_root"
+              sequence="100"
+              groups="hr_payroll_community.group_hr_payroll_community_manager"/>
+
+      <!-- Employees Parent Menu inside Payroll -->
+    <menuitem
+        id="menu_payroll_employees_root"
+        name="Employees"
+        parent="menu_hr_payroll_community_root"
+        sequence="10"/>
+
+    <!-- Employees -->
+    <menuitem
+        id="menu_payroll_employee_list"
+        name="Employees"
+        parent="menu_payroll_employees_root"
+        action="hr.open_view_employee_list_my"
+        sequence="1"/>
+
+    <!-- Contracts -->
+    <menuitem
+        id="menu_payroll_contract_list"
+        name="Contracts"
+        parent="menu_payroll_employees_root"
+        action="hr_contract.action_hr_contract"
+        sequence="2"/>
+
+    <!-- Contract View -->
+    <record id="hr_contract_view_form" model="ir.ui.view">
+        <field name="name">hr.contract.view.form.inherit</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='job_id']" position="after">
+                <field name="struct_id" required="1"/>
+            </xpath>
+            <xpath expr="//field[@name='job_id']" position="before">
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="currency_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='resource_calendar_id']"
+                   position="after">
+                <field name="schedule_pay"/>
+            </xpath>
+            <xpath expr="//group[@name='salary']" position="after">
+                <group string="Monthly Advantages in Cash" name='allowances'>
+                    <label for="hra"/>
+                    <div class="o_row">
+                        <field name="hra" nolabel="1"/>
+                        <span>/ month</span>
+                    </div>
+                    <label for="da"/>
+                    <div class="o_row">
+                        <field name="da" nolabel="1"/>
+                        <span>/ month</span>
+                    </div>
+                    <label for="travel_allowance"/>
+                    <div class="o_row">
+
+                        <field name="travel_allowance" nolabel="1"/>
+                        <span>/ month</span>
+                    </div>
+                    <label for="meal_allowance"/>
+                    <div class="o_row">
+
+                        <field name="meal_allowance" nolabel="1"/>
+                        <span>/ month</span>
+                    </div>
+                    <label for="medical_allowance"/>
+                    <div class="o_row">
+
+                        <field name="medical_allowance" nolabel="1"/>
+                        <span>/ month</span>
+                    </div>
+                    <label for="other_allowance"/>
+                    <div class="o_row">
+
+                        <field name="other_allowance" nolabel="1"/>
+                        <span>/ month</span>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

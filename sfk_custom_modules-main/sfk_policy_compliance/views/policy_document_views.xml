@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_policy_document_search" model="ir.ui.view">
+        <field name="name">policy.document.search</field>
+        <field name="model">policy.document</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="category_id"/>
+                <filter string="Active" name="filter_active" domain="[('active', '=', True)]"/>
+                <filter string="Archived" name="filter_archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Category" name="group_category" context="{'group_by': 'category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_policy_document_list" model="ir.ui.view">
+        <field name="name">policy.document.list</field>
+        <field name="model">policy.document</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="current_version_id"/>
+                <field name="current_status"/>
+                <field name="compliance_rate" widget="progressbar"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_policy_document_form" model="ir.ui.view">
+        <field name="name">policy.document.form</field>
+        <field name="model">policy.document</field>
+        <field name="arch" type="xml">
+            <form string="Policy Document">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_open_current_compliance" class="oe_stat_button" icon="fa-check-square-o"
+                                invisible="not current_version_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Current Version Compliance</span>
+                            </div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="category_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="current_version_id" readonly="1"/>
+                            <field name="current_status" readonly="1"/>
+                            <field name="compliance_rate" widget="percentage" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                    <notebook>
+                        <page string="Versions">
+                            <field name="version_ids" context="{'default_document_id': id}">
+                                <list editable="bottom">
+                                    <field name="version_number"/>
+                                    <field name="effective_date"/>
+                                    <field name="state"/>
+                                    <field name="mandatory_ack"/>
+                                    <field name="target_scope"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_policy_document" model="ir.actions.act_window">
+        <field name="name">Policies</field>
+        <field name="res_model">policy.document</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_policy_document_search"/>
+    </record>
+
+    <menuitem id="menu_policy_compliance_root" name="Policy &amp; Compliance" parent="hr.menu_hr_root" sequence="85" groups="base.group_user"/>
+    <menuitem id="menu_policy_document" name="Policies" parent="menu_policy_compliance_root" action="action_policy_document" sequence="10"/>
+    <menuitem id="menu_policy_configuration" name="Configuration" parent="menu_policy_compliance_root" sequence="90" groups="hr.group_hr_user"/>
+    <menuitem id="menu_policy_category" name="Policy Categories" parent="menu_policy_configuration" action="action_policy_category" sequence="10" groups="hr.group_hr_user"/>
+    <menuitem id="menu_policy_employee_type" name="Employee Types" parent="menu_policy_configuration" action="action_policy_employee_type" sequence="20" groups="hr.group_hr_user"/>
+</odoo>

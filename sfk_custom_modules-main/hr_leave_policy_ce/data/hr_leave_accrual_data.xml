@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="accrual_plan_annual_policy" model="hr.leave.accrual.plan">
+            <field name="name">Annual Leave Policy Accrual</field>
+            <field name="time_off_type_id" ref="leave_type_annual"/>
+            <field name="accrued_gain_time">start</field>
+            <field name="transition_mode">immediately</field>
+            <field name="carryover_date">other</field>
+            <field name="carryover_month">jul</field>
+            <field name="carryover_day">7</field>
+        </record>
+
+        <record id="accrual_plan_annual_level_1" model="hr.leave.accrual.level">
+            <field name="accrual_plan_id" ref="accrual_plan_annual_policy"/>
+            <field name="start_count">0</field>
+            <field name="start_type">year</field>
+            <field name="frequency">yearly</field>
+            <field name="yearly_month">jan</field>
+            <field name="yearly_day">1</field>
+            <field name="added_value">16</field>
+            <field name="added_value_type">day</field>
+            <field name="cap_accrued_time">1</field>
+            <field name="maximum_leave">120</field>
+            <field name="action_with_unused_accruals">all</field>
+        </record>
+
+        <record id="accrual_plan_annual_level_2" model="hr.leave.accrual.level">
+            <field name="accrual_plan_id" ref="accrual_plan_annual_policy"/>
+            <field name="start_count">2</field>
+            <field name="start_type">year</field>
+            <field name="frequency">yearly</field>
+            <field name="yearly_month">jan</field>
+            <field name="yearly_day">1</field>
+            <field name="added_value">17</field>
+            <field name="added_value_type">day</field>
+            <field name="cap_accrued_time">1</field>
+            <field name="maximum_leave">120</field>
+            <field name="action_with_unused_accruals">all</field>
+        </record>
+
+        <record id="accrual_plan_annual_level_3" model="hr.leave.accrual.level">
+            <field name="accrual_plan_id" ref="accrual_plan_annual_policy"/>
+            <field name="start_count">4</field>
+            <field name="start_type">year</field>
+            <field name="frequency">yearly</field>
+            <field name="yearly_month">jan</field>
+            <field name="yearly_day">1</field>
+            <field name="added_value">18</field>
+            <field name="added_value_type">day</field>
+            <field name="cap_accrued_time">1</field>
+            <field name="maximum_leave">120</field>
+            <field name="action_with_unused_accruals">all</field>
+        </record>
+
+        <record id="accrual_plan_annual_level_4" model="hr.leave.accrual.level">
+            <field name="accrual_plan_id" ref="accrual_plan_annual_policy"/>
+            <field name="start_count">6</field>
+            <field name="start_type">year</field>
+            <field name="frequency">yearly</field>
+            <field name="yearly_month">jan</field>
+            <field name="yearly_day">1</field>
+            <field name="added_value">19</field>
+            <field name="added_value_type">day</field>
+            <field name="cap_accrued_time">1</field>
+            <field name="maximum_leave">120</field>
+            <field name="action_with_unused_accruals">all</field>
+        </record>
+    </data>
+</odoo>

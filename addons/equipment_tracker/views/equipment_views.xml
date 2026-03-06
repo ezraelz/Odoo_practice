@@ -1,16 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="equipment_tree" model="ir.ui.view">
-        <field name="name">equipment.tracker.tree</field>
+
+    <!-- List View -->
+    <record id="equipment_list" model="ir.ui.view">
+        <field name="name">equipment.tracker.list</field>
         <field name="model">equipment.tracker</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name"/>
                 <field name="customer_id"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
+    <!-- Form View -->
     <record id="equipment_form" model="ir.ui.view">
         <field name="name">equipment.tracker.form</field>
         <field name="model">equipment.tracker</field>
@@ -22,19 +26,25 @@
                         <field name="serial_number"/>
                         <field name="customer_id"/>
                         <field name="purchase_date"/>
-                        <field name="state"/>
+                        <field name="state" readonly="is_locked"/>
                     </group>
                 </sheet>
             </form>
         </field>
     </record>
 
+    <!-- Action -->
     <record id="equipment_action" model="ir.actions.act_window">
         <field name="name">Equipment</field>
         <field name="res_model">equipment.tracker</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
+    <!-- Menu -->
     <menuitem id="equipment_root" name="Equipment"/>
-    <menuitem id="equipment_menu" parent="equipment_root" action="equipment_action"/>
+    <menuitem id="equipment_menu"
+              name="Equipment Tracker"
+              parent="equipment_root"
+              action="equipment_action"/>
+
 </odoo>

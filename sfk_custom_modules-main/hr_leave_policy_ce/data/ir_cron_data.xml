@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_annual_entitlement_generation" model="ir.cron">
+        <field name="name">Leave Policy: Generate Annual Entitlements</field>
+        <field name="model_id" ref="model_hr_leave_annual_entitlement"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_generate_annual_entitlements()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+
+    <record id="ir_cron_annual_entitlement_expiration" model="ir.cron">
+        <field name="name">Leave Policy: Expire Unused Annual Leave</field>
+        <field name="model_id" ref="model_hr_leave_annual_entitlement"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_expire_annual_leave()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+</odoo>

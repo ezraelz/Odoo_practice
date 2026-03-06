@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_hr_complaint_all" model="ir.actions.act_window">
+        <field name="name">All Complaints</field>
+        <field name="res_model">hr.complaint</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_hr_complaint_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No complaints found
+            </p>
+            <p>
+                Employee complaints will appear here for review.
+            </p>
+        </field>
+    </record>
+</odoo>

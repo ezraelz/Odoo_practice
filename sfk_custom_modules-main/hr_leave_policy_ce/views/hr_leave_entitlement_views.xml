@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_leave_annual_entitlement_list" model="ir.ui.view">
+        <field name="name">hr.leave.annual.entitlement.list</field>
+        <field name="model">hr.leave.annual.entitlement</field>
+        <field name="arch" type="xml">
+            <list string="Annual Leave Entitlements" create="0">
+                <field name="employee_id"/>
+                <field name="leave_type_id"/>
+                <field name="grant_date"/>
+                <field name="expiry_date"/>
+                <field name="days_granted"/>
+                <field name="days_used"/>
+                <field name="remaining_days"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_leave_annual_entitlement_form" model="ir.ui.view">
+        <field name="name">hr.leave.annual.entitlement.form</field>
+        <field name="model">hr.leave.annual.entitlement</field>
+        <field name="arch" type="xml">
+            <form string="Annual Leave Entitlement">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="leave_type_id"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="grant_date"/>
+                            <field name="expiry_date"/>
+                            <field name="days_granted"/>
+                            <field name="days_used"/>
+                            <field name="remaining_days" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_leave_annual_entitlement" model="ir.actions.act_window">
+        <field name="name">Annual Leave Entitlements</field>
+        <field name="res_model">hr.leave.annual.entitlement</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_hr_leave_annual_entitlement"
+        name="Annual Entitlements"
+        parent="hr_holidays.menu_hr_holidays_configuration"
+        action="action_hr_leave_annual_entitlement"
+        sequence="70"
+        groups="hr_holidays.group_hr_holidays_user"/>
+</odoo>

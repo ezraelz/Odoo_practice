@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root Menu under HR -->
+    <menuitem id="menu_hr_disciplinary_root"
+              name="Disciplinary Management"
+              parent="hr.menu_hr_root"
+              sequence="50"/>
+
+    <!-- MANAGER / OFFICER MENUS -->
+    <menuitem id="menu_hr_disciplinary_case"
+              name="All Cases"
+              parent="menu_hr_disciplinary_root"
+              sequence="10"
+              action="action_hr_disciplinary_case"
+              groups="hr_disciplinary_management.group_hr_disciplinary_manager,hr_disciplinary_management.group_hr_disciplinary_officer"/>
+
+    <menuitem id="menu_hr_offense_classification"
+              name="Offense Classifications"
+              parent="menu_hr_disciplinary_root"
+              sequence="20"
+              action="action_hr_offense_classification"
+              groups="hr_disciplinary_management.group_hr_disciplinary_manager,hr_disciplinary_management.group_hr_disciplinary_officer"/>
+<menuitem id="menu_hr_disciplinary_appeal"
+              name="All Appeals"
+              parent="menu_hr_disciplinary_root"
+              sequence="40"
+              action="action_hr_disciplinary_appeal"
+              groups="hr_disciplinary_management.group_hr_disciplinary_manager,hr_disciplinary_management.group_hr_disciplinary_officer"/>
+
+    <!-- EMPLOYEE MENUS -->
+    <menuitem id="menu_my_disciplinary_case"
+              name="My Cases"
+              parent="menu_hr_disciplinary_root"
+              sequence="10"
+              action="action_hr_disciplinary_case_employee"
+              groups="hr_disciplinary_management.group_hr_disciplinary_employee"/>
+
+    <menuitem id="menu_my_disciplinary_appeal"
+              name="My Appeals"
+              parent="menu_hr_disciplinary_root"
+              sequence="20"
+              action="action_hr_disciplinary_appeal_employee"
+              groups="hr_disciplinary_management.group_hr_disciplinary_employee"/>
+</odoo>

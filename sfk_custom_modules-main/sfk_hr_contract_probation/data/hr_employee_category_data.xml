@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="employee_tag_probation" model="hr.employee.category">
+        <field name="name">On Probation</field>
+        <field name="color">2</field>
+    </record>
+</odoo>

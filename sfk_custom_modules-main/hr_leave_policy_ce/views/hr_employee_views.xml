@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_leave_policy" model="ir.ui.view">
+        <field name="name">hr.employee.form.leave.policy</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <!-- Changed selector from @string='Schedule' to @name='active_group' -->
+            <xpath expr="//group[@name='active_group']" position="after">
+                <group string="Leave Policy" name="leave_policy_group">
+                    <field name="contract_hire_date" readonly="1"/>
+                    <field name="annual_leave_probation_end" readonly="1"/>
+                    <field name="annual_leave_entitlement" readonly="1"/>
+                    <field name="annual_leave_balance" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

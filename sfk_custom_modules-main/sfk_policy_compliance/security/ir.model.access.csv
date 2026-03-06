@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_policy_category_user,policy.category user,model_policy_category,base.group_user,1,0,0,0
+access_policy_category_hr,policy.category hr,model_policy_category,hr.group_hr_user,1,1,1,1
+access_policy_employee_type_user,policy.employee.type user,model_policy_employee_type,base.group_user,1,0,0,0
+access_policy_employee_type_hr,policy.employee.type hr,model_policy_employee_type,hr.group_hr_user,1,1,1,1
+access_policy_document_user,policy.document user,model_policy_document,base.group_user,1,0,0,0
+access_policy_document_hr,policy.document hr,model_policy_document,hr.group_hr_user,1,1,1,1
+access_policy_version_user,policy.version user,model_policy_version,base.group_user,1,0,0,0
+access_policy_version_hr,policy.version hr,model_policy_version,hr.group_hr_user,1,1,1,1
+access_policy_assignment_user,policy.assignment user,model_policy_assignment,base.group_user,1,1,0,0
+access_policy_assignment_hr,policy.assignment hr,model_policy_assignment,hr.group_hr_user,1,1,1,1

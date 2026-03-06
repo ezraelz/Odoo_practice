@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="policy_employee_type_employee" model="policy.employee.type">
+        <field name="name">Employee</field>
+        <field name="code">employee</field>
+    </record>
+    <record id="policy_employee_type_student" model="policy.employee.type">
+        <field name="name">Student</field>
+        <field name="code">student</field>
+    </record>
+    <record id="policy_employee_type_trainee" model="policy.employee.type">
+        <field name="name">Trainee</field>
+        <field name="code">trainee</field>
+    </record>
+    <record id="policy_employee_type_contractor" model="policy.employee.type">
+        <field name="name">Contractor</field>
+        <field name="code">contractor</field>
+    </record>
+</odoo>

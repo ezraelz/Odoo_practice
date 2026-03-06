@@ -1,0 +1,21 @@
+<odoo>
+    <!-- Own Equipment Only -->
+    <record id="group_equipment_user_own" model="res.groups">
+        <field name="name">Equipment: Own Only</field>
+        <field name="category_id" ref="base.module_category_operations"/>
+    </record>
+
+    <!-- All Equipment -->
+    <record id="group_equipment_user_all" model="res.groups">
+        <field name="name">Equipment: All Records</field>
+        <field name="category_id" ref="base.module_category_operations"/>
+        <field name="implied_ids" eval="[(4, ref('group_equipment_user_own'))]"/>
+    </record>
+
+    <!-- Administrator -->
+    <record id="group_equipment_admin" model="res.groups">
+        <field name="name">Equipment: Administrator</field>
+        <field name="category_id" ref="base.module_category_operations"/>
+        <field name="implied_ids" eval="[(4, ref('group_equipment_user_all'))]"/>
+    </record>
+</odoo>

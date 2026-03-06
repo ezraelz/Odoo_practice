@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View: All Appeals (Manager/Officer) -->
+    <record id="view_hr_disciplinary_appeal_list" model="ir.ui.view">
+        <field name="name">hr.disciplinary.appeal.list</field>
+        <field name="model">hr.disciplinary.appeal</field>
+        <field name="arch" type="xml">
+            <list string="Disciplinary Appeals" default_order="submission_date desc"
+                  decoration-danger="is_late_filing == True">
+                <field name="case_id"/>
+                <field name="employee_id"/>
+                <field name="submission_date"/>
+                <field name="employee_deadline" optional="show"/>
+                <field name="is_late_filing" widget="boolean" decoration-danger="is_late_filing"/>
+                <field name="stage" widget="badge"
+                       decoration-success="stage == 'decided'"
+                       decoration-warning="stage in ('under_review', 'hearing_scheduled')"/>
+                <field name="outcome" widget="badge"
+                       decoration-success="outcome == 'upheld'"
+                       decoration-danger="outcome == 'dismissed'"
+                       decoration-warning="outcome == 'partially_upheld'"/>
+                <field name="approved_by"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View: Full Appeal (Manager/Officer) -->
+    <record id="view_hr_disciplinary_appeal_form" model="ir.ui.view">
+        <field name="name">hr.disciplinary.appeal.form</field>
+        <field name="model">hr.disciplinary.appeal</field>
+        <field name="arch" type="xml">
+            <form string="Disciplinary Appeal">
+                <header>
+                    <field name="stage" widget="statusbar"
+                           statusbar_visible="submitted,under_review,hearing_scheduled,decided"/>
+                    <button name="action_start_review" type="object"
+                            string="Start Review" class="btn-primary"
+                            invisible="stage != 'submitted'"/>
+                    <button name="action_schedule_hearing" type="object"
+                            string="Schedule Hearing" class="btn-primary"
+                            invisible="stage != 'under_review'"/>
+                    <button name="action_decide" type="object"
+                            string="Record Decision" class="btn-primary"
+                            invisible="stage not in ('under_review', 'hearing_scheduled')"/>
+                    <button name="action_close" type="object"
+                            string="Close Appeal"
+                            invisible="stage != 'decided'"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not is_late_filing">
+                        <strong>⚠ Late Filing:</strong> This appeal was submitted after the 15
+                        working-day deadline (Article 18). It may be inadmissible.
+                    </div>
+                    <group>
+                        <group string="Appeal Details">
+                            <field name="case_id"/>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="action_id"/>
+                            <field name="submission_date"/>
+                            <field name="employee_deadline" readonly="1"/>
+                            <field name="is_late_filing" readonly="1"/>
+                        </group>
+                        <group string="Hearing">
+                            <field name="hearing_date"/>
+                            <field name="hearing_notes"
+                                   invisible="stage not in ('hearing_scheduled','decided','closed')"/>
+                        </group>
+                    </group>
+                    <group string="Grounds for Appeal">
+                        <field name="grounds" nolabel="1"
+                               placeholder="Detail the grounds for this appeal..."/>
+                    </group>
+                    <group string="Decision" invisible="stage not in ('under_review', 'hearing_scheduled', 'decided', 'closed')">
+                        <group>
+                            <field name="outcome"/>
+                            <field name="approved_by" readonly="1"/>
+                            <field name="decision_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="decision" nolabel="1"
+                                   placeholder="Enter the full decision reasoning..."/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Form View: Employee Appeal (create own appeal) -->
+    <record id="view_hr_disciplinary_appeal_form_employee" model="ir.ui.view">
+        <field name="name">hr.disciplinary.appeal.form.employee</field>
+        <field name="model">hr.disciplinary.appeal</field>
+        <field name="arch" type="xml">
+            <form string="My Appeal">
+                <header>
+                    <field name="stage" widget="statusbar"
+                           statusbar_visible="submitted,under_review,hearing_scheduled,decided"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not is_late_filing">
+                        <strong>⚠ Warning:</strong> You are filing after the 15 working-day deadline.
+                        Your appeal may be inadmissible under Article 18.
+                    </div>
+                    <div class="alert alert-info" role="alert">
+                        <strong>ℹ Your Rights:</strong> Under the Ethiopian Labour Proclamation No. 1156/2019,
+                        you have the right to appeal disciplinary actions within 15 working days of the incident.
+                    </div>
+                    <group>
+                        <group string="Appeal Details">
+                            <field name="case_id"
+                                   domain="[('employee_id.user_id', '=', uid)]"
+                                   readonly="stage != 'submitted'"/>
+                            <field name="action_id"
+                                   domain="[('case_id', '=', case_id)]"
+                                   readonly="stage != 'submitted'"/>
+                            <field name="submission_date" readonly="stage != 'submitted'"/>
+                            <field name="employee_deadline" readonly="1"/>
+                            <field name="is_late_filing" readonly="1"/>
+                        </group>
+                        <group string="Status">
+                            <field name="stage" readonly="1"/>
+                            <field name="outcome" readonly="1"/>
+                            <field name="decision_date" readonly="1"
+                                   invisible="not decision_date"/>
+                        </group>
+                    </group>
+                    <group string="Grounds for Appeal">
+                        <field name="grounds" nolabel="1"
+                               readonly="stage != 'submitted'"
+                               placeholder="Clearly explain your grounds for appeal..."/>
+                    </group>
+                    <!-- Show decision to employee once made -->
+                    <group string="Decision / Outcome"
+                           invisible="stage not in ('under_review', 'hearing_scheduled', 'decided', 'closed')">
+                        <field name="decision" readonly="1" nolabel="1"/>
+                        <field name="approved_by" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: All Appeals (Manager/Officer) -->
+    <record id="action_hr_disciplinary_appeal" model="ir.actions.act_window">
+        <field name="name">Disciplinary Appeals</field>
+        <field name="res_model">hr.disciplinary.appeal</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No appeals have been filed yet.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: My Appeals (Employee) -->
+    <record id="action_hr_disciplinary_appeal_employee" model="ir.actions.act_window">
+        <field name="name">My Appeals</field>
+        <field name="res_model">hr.disciplinary.appeal</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_hr_disciplinary_appeal_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_hr_disciplinary_appeal_form_employee')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                You have not filed any appeals yet. Click New to submit an appeal.
+            </p>
+        </field>
+    </record>
+</odoo>

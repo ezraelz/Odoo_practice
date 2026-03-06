@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_equipment_tracker_user,access.equipment.tracker.user,model_equipment_tracker,base.group_user,1,1,1,0
+access_equipment_user_own,equipment own,model_equipment_tracker,group_equipment_user_own,1,1,1,0
+access_equipment_user_all,equipment all,model_equipment_tracker,group_equipment_user_all,1,1,1,1
+access_equipment_admin,equipment admin,model_equipment_tracker,group_equipment_admin,1,1,1,1

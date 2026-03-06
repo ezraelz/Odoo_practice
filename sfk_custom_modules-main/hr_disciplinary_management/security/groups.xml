@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="group_hr_disciplinary_manager" model="res.groups">
+            <field name="name">Disciplinary Manager</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Full access: create/edit cases, actions, offenses, approve actions.</field>
+        </record>
+
+        <record id="group_hr_disciplinary_officer" model="res.groups">
+            <field name="name">Disciplinary Officer</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Can create and manage cases; cannot manage offense classifications.</field>
+        </record>
+
+        <record id="group_hr_disciplinary_employee" model="res.groups">
+            <field name="name">Disciplinary Employee</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Read-only access to their own cases.</field>
+        </record>
+    </data>
+</odoo>

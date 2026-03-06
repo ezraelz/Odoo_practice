@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- sfk.attendance -->
+        <record id="sfk_operation_attendance_action" model="ir.actions.act_window">
+            <field name="name">Attendance Records</field>
+            <field name="res_model">sfk.attendance</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="sfk_attendance_view_list" model="ir.ui.view">
+            <field name="name">sfk.attendance.list</field>
+            <field name="model">sfk.attendance</field>
+            <field name="arch" type="xml">
+                <list decoration-success="status == 'present'" decoration-danger="status == 'absent'" decoration-warning="status == 'late'">
+                    <field name="session_id"/>
+                    <field name="student_id"/>
+                    <field name="status" widget="badge"/>
+                    <field name="notes" optional="show"/>
+                    <field name="checked_by" optional="hide"/>
+                    <field name="checked_date" optional="hide"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="sfk_attendance_view_form" model="ir.ui.view">
+            <field name="name">sfk.attendance.form</field>
+            <field name="model">sfk.attendance</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="session_id" readonly="1"/>
+                                <field name="student_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="status" widget="radio" options="{'horizontal': true}"/>
+                                <field name="notes"/>
+                            </group>
+                        </group>
+                        <group string="Audit Log">
+                            <field name="checked_by" readonly="1"/>
+                            <field name="checked_date" readonly="1"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

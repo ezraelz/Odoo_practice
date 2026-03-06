@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_complaint_employee,HR Complaint Employee,model_hr_complaint,base.group_user,1,1,1,0
+access_hr_complaint_manager,HR Complaint Manager Full,model_hr_complaint,hr.group_hr_manager,1,1,1,1
+access_hr_complaint_reject_wizard,HR Complaint Reject Wizard,model_hr_complaint_reject_wizard,hr.group_hr_manager,1,1,1,0
+access_hr_complaint_print_wizard_manager,HR Complaint Print Wizard Manager,model_hr_complaint_print_wizard,hr.group_hr_manager,1,1,1,0

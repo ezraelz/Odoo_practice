@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_hr_complaint_root" 
+              name="Complaints" 
+              parent="hr.menu_hr_root" 
+              sequence="35" 
+              groups="base.group_user"/>
+
+    <menuitem id="menu_hr_complaint_my" 
+              name="My Complaints" 
+              parent="menu_hr_complaint_root" 
+              action="action_hr_complaint_my" 
+              sequence="10"/>
+
+    <menuitem id="menu_hr_complaint_management" 
+              name="Management" 
+              parent="menu_hr_complaint_root" 
+              sequence="20" 
+              groups="hr.group_hr_manager"/>
+
+    <menuitem id="menu_hr_complaint_all" 
+              name="All Complaints" 
+              parent="menu_hr_complaint_management" 
+              action="action_hr_complaint_all" 
+              sequence="10"/>
+</odoo>

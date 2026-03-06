@@ -1,0 +1,29 @@
+<odoo>
+    <record id="equipment_rule_own_only" model="ir.rule">
+        <field name="name">Equipment: Own Records Only</field>
+        <field name="model_id" ref="model_equipment_tracker"/>
+        <field name="groups" eval="[(4, ref('group_equipment_user_own'))]"/>
+        <field name="domain_force">
+            [('create_uid', '=', user.id)]
+        </field>
+    </record>
+    <record id="equipment_rule_all" model="ir.rule">
+        <field name="name">Equipment: All Records</field>
+        <field name="model_id" ref="model_equipment_tracker"/>
+        <field name="groups" eval="[(4, ref('group_equipment_user_all'))]"/>
+        <field name="domain_force">
+            [(1, '=', 1)]
+        </field>
+    </record>
+    <record id="equipment_rule_lock" model="ir.rule">
+        <field name="name">Equipment: Locked Records Protection</field>
+        <field name="model_id" ref="model_equipment_tracker"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="domain_force">
+            ['|', ('is_locked','=',False), ('create_uid','=',user.id)]
+        </field>
+    </record>
+</odoo>

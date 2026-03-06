@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_policy_assignment_search" model="ir.ui.view">
+        <field name="name">policy.assignment.search</field>
+        <field name="model">policy.assignment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="document_id"/>
+                <field name="version_id"/>
+                <filter string="Pending" name="status_pending" domain="[('status', '=', 'pending')]"/>
+                <filter string="Acknowledged" name="status_ack" domain="[('status', '=', 'acknowledged')]"/>
+                <filter string="Overdue" name="status_overdue" domain="[('status', '=', 'overdue')]"/>
+                <filter string="Required" name="required_only" domain="[('required', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Department" name="group_department" context="{'group_by': 'department_id'}"/>
+                    <filter string="Policy" name="group_policy" context="{'group_by': 'document_id'}"/>
+                    <filter string="Employee Type" name="group_emp_type" context="{'group_by': 'employee_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_policy_assignment_list" model="ir.ui.view">
+        <field name="name">policy.assignment.list</field>
+        <field name="model">policy.assignment</field>
+        <field name="arch" type="xml">
+            <list default_order="due_date asc" multi_edit="1">
+                <field name="employee_id"/>
+                <field name="document_id"/>
+                <field name="version_id"/>
+                <field name="required"/>
+                <field name="status" widget="badge"/>
+                <field name="assigned_date"/>
+                <field name="due_date"/>
+                <field name="acknowledged_date"/>
+                <field name="department_id" optional="show"/>
+                <field name="job_id" optional="show"/>
+                <field name="employee_type" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_policy_assignment_form" model="ir.ui.view">
+        <field name="name">policy.assignment.form</field>
+        <field name="model">policy.assignment</field>
+        <field name="arch" type="xml">
+            <form string="Policy Assignment">
+                <header>
+                    <button name="action_acknowledge" type="object" string="Acknowledge" class="btn-primary" invisible="status == 'acknowledged'"/>
+                    <field name="status" widget="statusbar" statusbar_visible="pending,overdue,acknowledged,informational"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="employee_user_id" readonly="1"/>
+                            <field name="required"/>
+                        </group>
+                        <group>
+                            <field name="document_id" readonly="1"/>
+                            <field name="version_id" readonly="1"/>
+                            <field name="accepted_version" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="assigned_date"/>
+                        <field name="due_date"/>
+                        <field name="acknowledged_date" readonly="1"/>
+                        <field name="last_reminder_date" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_policy_assignment_graph" model="ir.ui.view">
+        <field name="name">policy.assignment.graph</field>
+        <field name="model">policy.assignment</field>
+        <field name="arch" type="xml">
+            <graph string="Policy Compliance" type="bar">
+                <field name="department_id" type="row"/>
+                <field name="status" type="col"/>
+                <field name="id" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_policy_assignment_pivot" model="ir.ui.view">
+        <field name="name">policy.assignment.pivot</field>
+        <field name="model">policy.assignment</field>
+        <field name="arch" type="xml">
+            <pivot string="Policy Compliance">
+                <field name="department_id" type="row"/>
+                <field name="status" type="col"/>
+                <field name="id" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_policy_assignment" model="ir.actions.act_window">
+        <field name="name">Compliance Tracking</field>
+        <field name="res_model">policy.assignment</field>
+        <field name="view_mode">list,graph,pivot,form</field>
+        <field name="search_view_id" ref="view_policy_assignment_search"/>
+    </record>
+
+    <menuitem id="menu_policy_assignment" name="Compliance" parent="menu_policy_compliance_root" action="action_policy_assignment" sequence="30"/>
+</odoo>

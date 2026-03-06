@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_job_offer_form" model="ir.ui.view">
+        <field name="name">job.offer.form</field>
+        <field name="model">job.offer</field>
+        <field name="arch" type="xml">
+            <form string="Job Offer">
+                <header>
+                    <button string="Generate Offer" type="object" name="action_generate_offer" class="btn-primary"/>
+                    <button string="Download PDF" type="object" name="action_download_offer_pdf" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <group col="2">
+                        <group string="Offer Details">
+                            <field name="name"/>
+                            <field name="applicant_id" readonly="1"/>
+                            <field name="job_position"/>
+                            <field name="work_location"/>
+                            <field name="company_id"/>
+                            <field name="offer_date"/>
+                            <field name="start_date"/>
+                            <field name="salary"/>
+                            <field name="salary_type"/>
+                            <field name="contract_type_id"/>
+                            <field name="working_schedule"/>
+                            <field name="template"/>
+                        </group>
+                        <group string="PDF Preview">
+                            <field name="preview_pdf_html" widget="html" readonly="1" nolabel="1"/>
+                        </group>
+                    </group>
+                    <group string="Letter Content">
+                        <field name="benefits" placeholder="Health insurance, bonuses, allowances..."/>
+                        <field name="additional_terms" placeholder="Confidentiality, notice period, remote policy..."/>
+                        <div class="o_form_label">
+                            Dynamic Body Placeholders: {{applicant_name}}, {{job_position}}, {{company_name}}, {{start_date}}, {{salary}}, {{salary_type}}, {{contract_type}}, {{work_location}}, {{working_schedule}}, {{benefits}}, {{additional_terms}}, {{notes}}
+                        </div>
+                        <field name="body_text" placeholder="Write body text with placeholders, e.g. Dear {{applicant_name}}, we offer you {{job_position}} at {{company_name}} starting {{start_date}}."/>
+                        <field name="notes" placeholder="Any additional notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_job_offer_tree" model="ir.ui.view">
+        <field name="name">job.offer.tree</field>
+        <field name="model">job.offer</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="applicant_id"/>
+                <field name="job_position"/>
+                <field name="offer_date"/>
+                <field name="start_date"/>
+                <field name="salary"/>
+                <field name="template"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_job_offer" model="ir.actions.act_window">
+        <field name="name">Job Offers</field>
+        <field name="res_model">job.offer</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_job_offer_tree"/>
+    </record>
+
+    <record id="view_hr_applicant_form_job_offer_inherit" model="ir.ui.view">
+        <field name="name">hr.applicant.form.job.offer.inherit</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button
+                    name="action_view_job_offers"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-handshake-o"
+                    invisible="offer_count == 0"
+                >
+                    <field name="offer_count" widget="statinfo" string="Offers"/>
+                </button>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button
+                    name="action_open_job_offer"
+                    type="object"
+                    string="Generate Offer"
+                    class="btn-primary"
+                    invisible="not can_generate_offer"
+                />
+            </xpath>
+        </field>
+    </record>
+</odoo>

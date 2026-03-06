@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sfk_term_form" model="ir.ui.view">
+        <field name="name">sfk.term.form</field>
+        <field name="model">sfk.term</field>
+        <field name="arch" type="xml">
+            <form string="Term">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="program_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Grades &amp; Courses Mapping">
+                            <field name="term_course_ids">
+                                <list editable="bottom">
+                                    <field name="grade"/>
+                                    <field name="course_id"/>
+                                </list>
+                            </field>
+                            <p class="text-muted">
+                                Define which course is taught to which grade during this term. 
+                                The schedule will automatically pick up the course based on the grade selected.
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sfk_term_list" model="ir.ui.view">
+        <field name="name">sfk.term.list</field>
+        <field name="model">sfk.term</field>
+        <field name="arch" type="xml">
+            <list string="Terms">
+                <field name="name"/>
+                <field name="program_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sfk_term" model="ir.actions.act_window">
+        <field name="name">Terms</field>
+        <field name="res_model">sfk.term</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

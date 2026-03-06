@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_job_offer_user,access.job.offer.user,model_job_offer,hr_recruitment.group_hr_recruitment_user,1,1,1,0
+access_job_offer_manager,access.job.offer.manager,model_job_offer,hr_recruitment.group_hr_recruitment_manager,1,1,1,1

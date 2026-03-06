@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.module.category" id="module_category_sfk_operation">
+            <field name="name">STEM Operations</field>
+            <field name="description">Manage STEM Programs, Sessions, and Attendance.</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- Role: Sales / Registrar -->
+        <record id="group_sfk_sales" model="res.groups">
+            <field name="name">Sales / Registrar</field>
+            <field name="category_id" ref="module_category_sfk_operation"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Can register students and enroll them. Read-only on programs/courses.</field>
+        </record>
+
+        <!-- Role: Instructor -->
+        <record id="group_sfk_instructor" model="res.groups">
+            <field name="name">Instructor</field>
+            <field name="category_id" ref="module_category_sfk_operation"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Can view own sessions. Can record attendance for Center-based sessions.</field>
+        </record>
+
+        <!-- Role: Supervisor -->
+        <record id="group_sfk_supervisor" model="res.groups">
+            <field name="name">Supervisor</field>
+            <field name="category_id" ref="module_category_sfk_operation"/>
+            <field name="implied_ids" eval="[(4, ref('group_sfk_instructor'))]"/>
+            <field name="comment">Mirrors Coach Manager visibility but requires approval for actions.</field>
+        </record>
+
+        <!-- Role: Coach Manager -->
+        <record id="group_sfk_coach_manager" model="res.groups">
+            <field name="name">Coach Manager</field>
+            <field name="category_id" ref="module_category_sfk_operation"/>
+            <field name="implied_ids" eval="[(4, ref('group_sfk_supervisor'))]"/>
+            <field name="comment">Responsible for assigned programs. Approves attendance. Requests instructor changes.</field>
+        </record>
+
+        <!-- Role: Operation Manager -->
+        <record id="group_sfk_manager" model="res.groups">
+            <field name="name">Operation Manager</field>
+            <field name="category_id" ref="module_category_sfk_operation"/>
+            <field name="implied_ids" eval="[(4, ref('group_sfk_coach_manager'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Full Control. Approves instructor changes. Program lifecycle.</field>
+        </record>
+    </data>
+</odoo>

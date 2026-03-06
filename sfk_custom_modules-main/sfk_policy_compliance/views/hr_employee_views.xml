@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_policy_compliance" model="ir.ui.view">
+        <field name="name">hr.employee.form.policy.compliance</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_policy_assignments" class="oe_stat_button" icon="fa-check-square-o" type="object" groups="hr.group_hr_user">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="policy_pending_ack_count"/>
+                        </span>
+                        <span class="o_stat_text">Policy Pending</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <xpath expr="//group[@name='active_group']" position="after">
+                <group string="Policy Compliance" groups="hr.group_hr_user">
+                    <field name="policy_pending_ack_count" readonly="1"/>
+                    <field name="policy_onboarding_complete" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

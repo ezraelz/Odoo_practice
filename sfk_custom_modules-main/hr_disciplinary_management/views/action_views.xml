@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- action_views.xml — Supplementary action records (e.g. suspensions, warnings issued) -->
+    <!-- The main DECISION is now recorded on the case itself in the Decision tab -->
+
+    <record id="view_hr_disciplinary_action_list" model="ir.ui.view">
+        <field name="name">hr.disciplinary.action.list</field>
+        <field name="model">hr.disciplinary.action</field>
+        <field name="arch" type="xml">
+            <list string="Disciplinary Actions" default_order="effective_date desc"
+                  decoration-muted="stage == 'revoked' or is_expired">
+                <field name="case_id"/>
+                <field name="employee_id"/>
+                <field name="action_type" widget="badge"
+                       decoration-danger="action_type == 'termination'"
+                       decoration-warning="action_type == 'final_warning'"
+                       decoration-info="action_type == 'written_warning'"/>
+                <field name="stage" widget="badge"
+                       decoration-success="stage in ('approved','served','completed')"
+                       decoration-danger="stage == 'revoked'"
+                       decoration-warning="stage == 'pending_approval'"/>
+                <field name="effective_date"/>
+                <field name="has_expiry" optional="show"/>
+                <field name="expiry_date" optional="show"/>
+                <field name="is_expired" widget="boolean" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_disciplinary_action_form" model="ir.ui.view">
+        <field name="name">hr.disciplinary.action.form</field>
+        <field name="model">hr.disciplinary.action</field>
+        <field name="arch" type="xml">
+            <form string="Disciplinary Action Record">
+                <header>
+                    <field name="stage" widget="statusbar"
+                           statusbar_visible="draft,pending_approval,approved,served,completed"/>
+                    <button name="action_submit_for_approval" type="object"
+                            string="Submit for Approval" class="btn-primary"
+                            invisible="stage != 'draft'"/>
+                    <button name="action_approve" type="object"
+                            string="Approve" class="btn-primary"
+                            invisible="stage != 'pending_approval'"/>
+                    <button name="action_mark_served" type="object"
+                            string="Mark as Served" class="btn-success"
+                            invisible="stage != 'approved'"/>
+                    <button name="action_complete" type="object"
+                            string="Complete"
+                            invisible="stage != 'served'"/>
+                    <button name="action_revoke" type="object"
+                            string="Revoke" class="btn-danger"
+                            invisible="stage in ('draft','revoked','completed')"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-danger" role="alert" invisible="not is_expired">
+                        <strong>Expired</strong> — This action expired on
+                        <field name="expiry_date" readonly="1" nolabel="1"/> and is no longer active.
+                    </div>
+                    <group>
+                        <group string="Details">
+                            <field name="case_id"/>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="action_type"/>
+                            <field name="effective_date"/>
+                            <field name="approval_user_id" readonly="1"/>
+                            <field name="approved_date" readonly="1"/>
+                        </group>
+                        <group string="Expiry" invisible="action_type == 'termination'">
+                            <field name="has_expiry" widget="boolean_toggle"
+                                   string="Has Expiry Date?"/>
+                            <field name="expiry_date" invisible="not has_expiry"
+                                   required="has_expiry"/>
+                            <field name="is_expired" readonly="1" invisible="not has_expiry"/>
+                        </group>
+                    </group>
+                    <group string="Termination Details"
+                           invisible="action_type != 'termination'">
+                        <field name="termination_type"/>
+                        <field name="notice_period_months"
+                               invisible="termination_type != 'with_notice'"/>
+                        <field name="notice_served_date"/>
+                        <field name="notice_delivery_method"/>
+                    </group>
+                    <group string="Suspension Details"
+                           invisible="action_type != 'suspension'">
+                        <field name="suspension_days"/>
+                        <field name="suspension_with_pay"/>
+                    </group>
+                    <group string="Fine Details" invisible="action_type != 'fine'">
+                        <field name="fine_amount"/>
+                        <field name="fine_currency_id"/>
+                    </group>
+                    <group string="Justification">
+                        <field name="justification" nolabel="1"
+                               placeholder="Justification for this action..."/>
+                    </group>
+                    <group string="Revocation" invisible="stage != 'revoked'">
+                        <field name="revoke_reason" nolabel="1"/>
+                        <field name="revoked_by" readonly="1"/>
+                        <field name="revoked_date" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_disciplinary_action" model="ir.actions.act_window">
+        <field name="name">Disciplinary Actions</field>
+        <field name="res_model">hr.disciplinary.action</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No supplementary action records yet.
+            </p>
+        </field>
+    </record>
+</odoo>

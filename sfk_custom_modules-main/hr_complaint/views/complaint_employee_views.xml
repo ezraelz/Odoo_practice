@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_hr_complaint_my" model="ir.actions.act_window">
+        <field name="name">My Complaints</field>
+        <field name="res_model">hr.complaint</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hr_complaint_search"/>
+        <field name="context">{'search_default_filter_my_complaints': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No complaints yet
+            </p>
+            <p>
+                Submit a complaint to HR securely and privately.
+            </p>
+        </field>
+    </record>
+</odoo>

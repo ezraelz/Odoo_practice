@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== LIST: Manager/Officer ==================== -->
+    <record id="view_hr_disciplinary_case_list" model="ir.ui.view">
+        <field name="name">hr.disciplinary.case.list</field>
+        <field name="model">hr.disciplinary.case</field>
+        <field name="arch" type="xml">
+            <list string="Disciplinary Cases" default_order="incident_date desc"
+                  decoration-danger="is_time_barred == True"
+                  decoration-warning="severity_level in ('serious','gross')">
+                <field name="name" string="Case Ref"/>
+                <field name="employee_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="incident_date"/>
+                <field name="offense_classification_id"/>
+                <field name="severity_level" widget="badge"
+                       decoration-danger="severity_level == 'gross'"
+                       decoration-warning="severity_level == 'serious'"
+                       decoration-info="severity_level == 'moderate'"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'closed'"
+                       decoration-danger="state in ('decision','appeal')"
+                       decoration-warning="state in ('hearing','show_cause')"
+                       decoration-info="state == 'investigation'"/>
+                <field name="acknowledgment_state" widget="badge"
+                       decoration-success="acknowledgment_state == 'acknowledged'"
+                       decoration-danger="acknowledgment_state == 'contested'"
+                       decoration-warning="acknowledgment_state == 'pending'"
+                       string="Response"/>
+                <field name="decision_outcome" widget="badge"
+                       decoration-danger="decision_outcome == 'termination'"
+                       decoration-warning="decision_outcome in ('final_warning','suspension')"
+                       decoration-success="decision_outcome == 'cleared'"
+                       optional="show"/>
+                <field name="is_time_barred" widget="boolean" optional="show"/>
+                <field name="employer_deadline" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== LIST: Employee ==================== -->
+    <record id="view_hr_disciplinary_case_list_employee" model="ir.ui.view">
+        <field name="name">hr.disciplinary.case.list.employee</field>
+        <field name="model">hr.disciplinary.case</field>
+        <field name="arch" type="xml">
+            <list string="My Cases" default_order="incident_date desc" create="false">
+                <field name="name" string="Case Ref"/>
+                <field name="incident_date"/>
+                <field name="offense_classification_id" string="Offense"/>
+                <field name="severity_level" widget="badge"
+                       decoration-danger="severity_level == 'gross'"
+                       decoration-warning="severity_level == 'serious'"
+                       decoration-info="severity_level == 'moderate'"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'closed'"
+                       decoration-danger="state in ('decision','appeal')"
+                       decoration-warning="state in ('hearing','show_cause')"
+                       decoration-info="state == 'investigation'"
+                       string="Case Stage"/>
+                <field name="acknowledgment_state" widget="badge"
+                       decoration-success="acknowledgment_state == 'acknowledged'"
+                       decoration-danger="acknowledgment_state == 'contested'"
+                       decoration-warning="acknowledgment_state == 'pending'"
+                       string="My Response"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==================== FORM: Manager/Officer ==================== -->
+    <record id="view_hr_disciplinary_case_form" model="ir.ui.view">
+        <field name="name">hr.disciplinary.case.form</field>
+        <field name="model">hr.disciplinary.case</field>
+        <field name="arch" type="xml">
+            <form string="Disciplinary Case">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="notified,show_cause,investigation,hearing,decision,appeal,closed"/>
+
+                    <button name="action_issue_show_cause" type="object"
+                            string="Issue Show Cause Notice"
+                            invisible="state not in ('notified',)"/>
+
+                    <button name="action_record_show_cause_response" type="object"
+                            string="Record Employee Response"
+                            invisible="state != 'show_cause' or show_cause_responded"/>
+
+                    <button name="action_start_investigation" type="object"
+                            string="Start Investigation" class="btn-primary"
+                            invisible="state not in ('notified','show_cause')"/>
+
+                    <button name="action_schedule_hearing" type="object"
+                            string="Schedule Hearing" class="btn-primary"
+                            invisible="state not in ('investigation','show_cause','notified')"/>
+
+                    <button name="action_move_to_decision" type="object"
+                            string="Move to Decision" class="btn-primary"
+                            invisible="state not in ('hearing','investigation','show_cause','notified')"/>
+
+                    <button name="action_record_decision" type="object"
+                            string="Record Decision" class="btn-success"
+                            invisible="state != 'decision' or decision_date != False"/>
+
+                    <button name="action_serve_decision" type="object"
+                            string="Mark Decision as Served" class="btn-primary"
+                            invisible="state != 'decision' or not decision_date or decision_served"/>
+
+                    <button name="action_generate_decision_letter" type="object"
+                            string="Generate Decision Letter" class="btn-info"
+                            invisible="state not in ('decision','appeal','closed') or not decision_date"/>
+
+                    <button name="action_close_case" type="object"
+                            string="Close Case"
+                            invisible="state not in ('decision','appeal') or not decision_served"/>
+
+                    <button name="action_open_appeal" type="object"
+                            string="Open Appeal Stage"
+                            invisible="state != 'decision' or not decision_served"/>
+                </header>
+
+                <sheet>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="not is_time_barred">
+                        <strong>Time-Barred:</strong> The 30 working-day employer action
+                        deadline has passed (Article 18). This case may be legally invalid.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="acknowledgment_state != 'pending'">
+                        <strong>Awaiting Employee Response</strong> — Employee has not yet
+                        acknowledged or contested this case.
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="acknowledgment_state != 'contested'">
+                        <strong>Case Contested by Employee</strong> — Review their statement
+                        in the "Employee Response" tab before proceeding.
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="not recommended_action or state == 'closed'">
+                        <strong>Recommended Action (Progressive Discipline):</strong>
+                        <field name="recommended_action" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="alert alert-success" role="alert"
+                         invisible="not decision_served or state == 'closed'">
+                        <strong>Decision Served.</strong> Employee may appeal within
+                        15 working days of the incident date.
+                    </div>
+
+                    <!-- Case header summary (always visible, no tab) -->
+                    <group>
+                        <group string="Case Information">
+                            <field name="name" readonly="1"/>
+                            <field name="labour_law_article"/>
+                            <field name="incident_date"/>
+                            <field name="reported_date"/>
+                            <field name="employer_knowledge_date"/>
+                            <field name="employer_deadline" readonly="1"/>
+                        </group>
+                        <group string="Employee">
+                            <field name="employee_id"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="position" readonly="1"/>
+                            <field name="manager_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Offense">
+                            <field name="offense_classification_id"/>
+                            <field name="severity_level" readonly="1"/>
+                            <field name="is_immediate_dismissal" readonly="1"/>
+                        </group>
+                        <group string="Employee Prior Record">
+                            <field name="verbal_warning_count" readonly="1" string="Prior Verbal Warnings"/>
+                            <field name="written_warning_count" readonly="1" string="Prior Written Warnings"/>
+                            <field name="final_warning_count" readonly="1" string="Prior Final Warnings"/>
+                            <field name="prior_case_count" readonly="1" string="Prior Closed Cases"/>
+                        </group>
+                    </group>
+                    <group string="Incident Description">
+                        <field name="description" nolabel="1"
+                               placeholder="Describe the incident clearly and factually..."/>
+                    </group>
+                    <group string="Absence / Lateness Tracking (Article 27)"
+                           invisible="not offense_classification_id">
+                        <field name="unauthorized_absence_days"/>
+                        <field name="late_arrival_count"/>
+                        <field name="absence_warnings_issued"/>
+                    </group>
+
+                    <notebook>
+
+                        <!-- TAB 1: Employee Response -->
+                        <page string="Employee Response">
+                            <group>
+                                <group string="Acknowledgment">
+                                    <field name="acknowledgment_state" readonly="1" widget="badge"
+                                           decoration-success="acknowledgment_state == 'acknowledged'"
+                                           decoration-danger="acknowledgment_state == 'contested'"
+                                           decoration-warning="acknowledgment_state == 'pending'"/>
+                                    <field name="acknowledged_date" readonly="1"
+                                           invisible="not acknowledged_date"/>
+                                    <field name="contest_date" readonly="1"
+                                           invisible="not contest_date"/>
+                                </group>
+                                <group string="Notice Delivery">
+                                    <field name="notice_delivery_method"/>
+                                    <field name="notice_witness_id"
+                                           invisible="notice_delivery_method != 'refused'"/>
+                                    <field name="notice_board_posted_date"
+                                           invisible="notice_delivery_method != 'notice_board'"/>
+                                    <field name="notice_board_removal_date" readonly="1"
+                                           invisible="notice_delivery_method != 'notice_board'"/>
+                                </group>
+                            </group>
+                            <group string="Employee Contest Statement"
+                                   invisible="acknowledgment_state != 'contested'">
+                                <field name="contest_reason" readonly="1" nolabel="1"/>
+                            </group>
+                        </page>
+
+                        <!-- TAB 2: Show Cause -->
+                        <page string="Show Cause"
+                              invisible="state not in ('show_cause','investigation','hearing','decision','appeal','closed')">
+                            <group>
+                                <group string="Notice">
+                                    <field name="show_cause_issued_date"/>
+                                    <field name="show_cause_deadline"/>
+                                    <field name="show_cause_responded" widget="boolean_toggle"/>
+                                </group>
+                            </group>
+                            <group string="Employee Written Response">
+                                <field name="show_cause_response" nolabel="1"
+                                       placeholder="Record the employee's written response..."/>
+                            </group>
+                        </page>
+
+                        <!-- TAB 3: Investigation -->
+                        <page string="Investigation">
+                            <field name="investigation_ids">
+                                <list editable="bottom">
+                                    <field name="investigating_officer_id"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'completed'"
+                                           decoration-warning="state == 'ongoing'"/>
+                                    <field name="is_overdue" widget="boolean"
+                                           decoration-danger="is_overdue"/>
+                                    <field name="findings"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- TAB 4: Hearing -->
+                        <page string="Hearing"
+                              invisible="state not in ('hearing','decision','appeal','closed')">
+                            <group>
+                                <group string="Hearing Details">
+                                    <field name="hearing_date"/>
+                                    <field name="hearing_officer_id"/>
+                                </group>
+                            </group>
+                            <group string="Hearing Notes">
+                                <field name="hearing_notes" nolabel="1"
+                                       placeholder="Record hearing proceedings, statements, and findings..."/>
+                            </group>
+                        </page>
+
+                        <!-- TAB 5: Decision — ALL decision fields unified here, nothing external -->
+                        <page string="Decision"
+                              invisible="state not in ('decision','appeal','closed')">
+
+                            <!-- Step A: Pick the outcome -->
+                            <group string="Step 1 — Select Decision Outcome"
+                                   invisible="decision_date != False">
+                                <div class="alert alert-info" role="alert">
+                                    Select the disciplinary outcome below. Fields will adjust
+                                    based on your selection. Fill in all required fields then
+                                    click <strong>"Record Decision"</strong> in the header.
+                                </div>
+                                <field name="decision_outcome" required="state == 'decision'"/>
+                            </group>
+
+                            <!-- Outcome already recorded — show it as badge -->
+                            <group string="Decision Outcome" invisible="not decision_date">
+                                <field name="decision_outcome" readonly="1" widget="badge"
+                                       decoration-danger="decision_outcome == 'termination'"
+                                       decoration-warning="decision_outcome in ('final_warning','suspension','demotion')"
+                                       decoration-success="decision_outcome in ('cleared','verbal_warning','written_warning')"/>
+                                <field name="decision_date" readonly="1" string="Recorded On"/>
+                                <field name="decision_by" readonly="1" string="Recorded By"/>
+                            </group>
+
+                            <!-- Termination details — only if termination selected -->
+                            <group string="Termination Details (Ethiopian Labour Law)"
+                                   invisible="decision_outcome != 'termination'">
+                                <group>
+                                    <field name="termination_type"
+                                           required="decision_outcome == 'termination'"/>
+                                    <field name="notice_period_months"
+                                           invisible="termination_type != 'with_notice'"
+                                           string="Notice Period (months) — auto-calculated"/>
+                                </group>
+                            </group>
+
+                            <!-- Suspension details — only if suspension selected -->
+                            <group string="Suspension Details"
+                                   invisible="decision_outcome != 'suspension'">
+                                <group>
+                                    <field name="suspension_days"
+                                           required="decision_outcome == 'suspension'"/>
+                                    <field name="suspension_with_pay"/>
+                                </group>
+                            </group>
+
+                            <!-- Warning expiry — for warnings only -->
+                            <group string="Warning Validity Period"
+                                   invisible="decision_outcome not in ('verbal_warning','written_warning','final_warning')">
+                                <div class="text-muted">
+                                    Warnings typically remain active for 6-12 months.
+                                    Record the expiry date for progressive discipline tracking.
+                                </div>
+                                <field name="warning_expiry_date"/>
+                            </group>
+
+                            <!-- Rationale — always required -->
+                            <group string="Step 2 — Decision Rationale">
+                                <field name="decision_rationale" nolabel="1"
+                                       placeholder="Provide full reasoning: reference the facts found, the employee's prior record, applicable law (Art. 27/28), and why this outcome was chosen..."
+                                       required="state == 'decision'"/>
+                            </group>
+
+                            <!-- Serving the decision -->
+                            <group string="Step 3 — Serve Decision to Employee"
+                                   invisible="not decision_date">
+                                <div class="alert alert-warning" role="alert"
+                                     invisible="decision_served">
+                                    The decision must be formally served to the employee
+                                    before the appeal window opens. Select the delivery method
+                                    then click <strong>"Mark Decision as Served"</strong>.
+                                </div>
+                                <group>
+                                    <field name="decision_served" widget="boolean_toggle"
+                                           string="Decision Served?" readonly="1"/>
+                                    <field name="decision_served_date" readonly="1"
+                                           invisible="not decision_served"/>
+                                </group>
+                                <group>
+                                    <field name="decision_served_method"
+                                           readonly="decision_served"/>
+                                </group>
+                            </group>
+
+                        </page>
+
+                        <!-- Letter download area inside Decision tab -->
+                        <!-- TAB 6: Appeals -->
+                        <page string="Appeals"
+                              invisible="state not in ('appeal','closed')">
+                            <field name="appeal_ids">
+                                <list>
+                                    <field name="submission_date"/>
+                                    <field name="stage" widget="badge"
+                                           decoration-success="stage == 'decided'"
+                                           decoration-warning="stage in ('under_review','hearing_scheduled')"/>
+                                    <field name="grounds"/>
+                                    <field name="outcome" widget="badge"
+                                           decoration-success="outcome == 'upheld'"
+                                           decoration-danger="outcome == 'dismissed'"
+                                           decoration-warning="outcome == 'partially_upheld'"/>
+                                    <field name="approved_by"/>
+                                    <field name="is_late_filing" widget="boolean"
+                                           decoration-danger="is_late_filing"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- TAB 7: Closure -->
+                        <page string="Closure and Settlement" invisible="state != 'closed'">
+                            <group>
+                                <group string="Closure">
+                                    <field name="closure_date" readonly="1"/>
+                                    <field name="closure_summary"/>
+                                    <field name="final_payment_due_date" readonly="1"
+                                           invisible="decision_outcome != 'termination'"/>
+                                    <field name="final_payment_completed" widget="boolean_toggle"
+                                           invisible="decision_outcome != 'termination'"/>
+                                </group>
+                                <group string="Final Requirements (Art. 19)"
+                                       invisible="decision_outcome != 'termination'">
+                                    <field name="employment_certificate_issued" widget="boolean_toggle"/>
+                                    <field name="severance_applicable" widget="boolean_toggle"/>
+                                    <field name="severance_amount" invisible="not severance_applicable"/>
+                                </group>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== FORM: Employee ==================== -->
+    <record id="view_hr_disciplinary_case_form_employee" model="ir.ui.view">
+        <field name="name">hr.disciplinary.case.form.employee</field>
+        <field name="model">hr.disciplinary.case</field>
+        <field name="arch" type="xml">
+            <form string="My Disciplinary Case" create="false" delete="false">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="notified,show_cause,investigation,hearing,decision,appeal,closed"/>
+                    <button name="action_employee_acknowledge" type="object"
+                            string="Acknowledge Receipt" class="btn-success"
+                            invisible="acknowledgment_state != 'pending'"/>
+                    <button name="action_employee_contest" type="object"
+                            string="Contest This Case" class="btn-warning"
+                            invisible="acknowledgment_state != 'pending'"/>
+                    <button name="action_open_appeal" type="object"
+                            string="Submit an Appeal" class="btn-primary"
+                            invisible="state != 'decision' or not decision_served"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="acknowledgment_state != 'pending'">
+                        <strong>Action Required:</strong> You have received a disciplinary notice.
+                        Please read the details and either <strong>Acknowledge Receipt</strong>
+                        or <strong>Contest This Case</strong> (write your statement below first).
+                    </div>
+                    <div class="alert alert-success" role="alert"
+                         invisible="acknowledgment_state != 'acknowledged'">
+                        <strong>Acknowledged</strong> on
+                        <field name="acknowledged_date" readonly="1" nolabel="1"/>.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="acknowledgment_state != 'contested'">
+                        <strong>Contested</strong> on
+                        <field name="contest_date" readonly="1" nolabel="1"/>.
+                        HR will review your statement.
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="state != 'investigation'">
+                        <strong>Under Investigation</strong> — An investigation is in progress.
+                        You may be contacted by the investigating officer.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'hearing'">
+                        <strong>Hearing Scheduled</strong> — A disciplinary hearing has been
+                        scheduled. You will be contacted with details.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'decision' or decision_served">
+                        <strong>Decision Stage</strong> — A decision is being finalized.
+                        You will be formally notified once served.
+                    </div>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="state != 'decision' or not decision_served">
+                        <strong>Decision Served to You</strong> — See the "Decision" tab below.
+                        You have the right to appeal within 15 working days of the incident date.
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="state != 'appeal'">
+                        <strong>Appeal In Progress</strong> — See the "My Appeals" tab.
+                    </div>
+                    <div class="alert alert-success" role="alert"
+                         invisible="state != 'closed'">
+                        <strong>Case Closed</strong> — See the "Decision" tab for final outcome.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'show_cause'">
+                        <strong>Show Cause Notice Issued</strong> — You must respond by
+                        <field name="show_cause_deadline" readonly="1" nolabel="1"/>.
+                        Contact HR to submit your response.
+                    </div>
+
+                    <group string="Write Your Contest Statement Here"
+                           invisible="acknowledgment_state != 'pending'">
+                        <field name="contest_reason" nolabel="1"
+                               placeholder="Explain clearly why you dispute this case. Include facts, dates, witnesses. Then click 'Contest This Case' above."/>
+                    </group>
+
+                    <group string="Case Summary">
+                        <group>
+                            <field name="name" readonly="1" string="Case Reference"/>
+                            <field name="incident_date" readonly="1"/>
+                            <field name="offense_classification_id" readonly="1"/>
+                            <field name="severity_level" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Incident Description">
+                        <field name="description" readonly="1" nolabel="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Show Cause Notice"
+                              invisible="state not in ('show_cause','investigation','hearing','decision','appeal','closed')">
+                            <group>
+                                <field name="show_cause_issued_date" readonly="1" string="Notice Issued"/>
+                                <field name="show_cause_deadline" readonly="1" string="Response Deadline"/>
+                                <field name="show_cause_responded" readonly="1" string="Response Received by HR"/>
+                            </group>
+                            <group string="Your Recorded Response" invisible="not show_cause_response">
+                                <field name="show_cause_response" readonly="1" nolabel="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Investigation">
+                            <div class="alert alert-secondary" role="alert"
+                                 invisible="investigation_ids">
+                                No investigation started yet.
+                            </div>
+                            <field name="investigation_ids" readonly="1">
+                                <list>
+                                    <field name="investigating_officer_id" string="Officer"/>
+                                    <field name="start_date" string="Started"/>
+                                    <field name="end_date" string="Expected Completion"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'completed'"
+                                           decoration-warning="state == 'ongoing'"
+                                           string="Status"/>
+                                    <field name="is_overdue" widget="boolean"
+                                           decoration-danger="is_overdue" string="Overdue?"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Decision"
+                              invisible="state not in ('decision','appeal','closed')">
+                            <div class="alert alert-secondary" role="alert"
+                                 invisible="decision_outcome">
+                                The decision has not been recorded yet.
+                            </div>
+                            <group invisible="not decision_outcome">
+                                <group string="Outcome">
+                                    <field name="decision_outcome" readonly="1" widget="badge"
+                                           decoration-danger="decision_outcome == 'termination'"
+                                           decoration-warning="decision_outcome in ('final_warning','suspension')"
+                                           decoration-success="decision_outcome == 'cleared'"/>
+                                    <field name="decision_date" readonly="1"/>
+                                    <field name="termination_type" readonly="1"
+                                           invisible="decision_outcome != 'termination'"/>
+                                    <field name="notice_period_months" readonly="1"
+                                           invisible="decision_outcome != 'termination' or termination_type != 'with_notice'"/>
+                                    <field name="suspension_days" readonly="1"
+                                           invisible="decision_outcome != 'suspension'"/>
+                                    <field name="suspension_with_pay" readonly="1"
+                                           invisible="decision_outcome != 'suspension'"/>
+                                    <field name="warning_expiry_date" readonly="1"
+                                           invisible="decision_outcome not in ('verbal_warning','written_warning','final_warning')"/>
+                                </group>
+                            </group>
+                            <group string="Decision Rationale" invisible="not decision_rationale">
+                                <field name="decision_rationale" readonly="1" nolabel="1"/>
+                            </group>
+                        </page>
+
+                        <page string="My Appeals">
+                            <div class="alert alert-info" role="alert"
+                                 invisible="appeal_ids or state != 'decision' or not decision_served">
+                                <strong>Your Right to Appeal:</strong> Under Ethiopian Labour
+                                Proclamation No. 1156/2019, you may appeal within
+                                <strong>15 working days</strong> of the incident date.
+                                Use <strong>"Submit an Appeal"</strong> above.
+                            </div>
+                            <field name="appeal_ids" readonly="1">
+                                <list>
+                                    <field name="submission_date" string="Filed On"/>
+                                    <field name="stage" widget="badge"
+                                           decoration-success="stage == 'decided'"
+                                           decoration-warning="stage in ('under_review','hearing_scheduled')"
+                                           string="Stage"/>
+                                    <field name="hearing_date" string="Hearing Date" optional="show"/>
+                                    <field name="grounds" string="My Grounds"/>
+                                    <field name="outcome" widget="badge"
+                                           decoration-success="outcome == 'upheld'"
+                                           decoration-danger="outcome == 'dismissed'"
+                                           decoration-warning="outcome == 'partially_upheld'"
+                                           string="Outcome"/>
+                                    <field name="decision" string="Decision Reasoning"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Final Settlement"
+                              invisible="state != 'closed' or decision_outcome != 'termination'">
+                            <group>
+                                <group string="Closure">
+                                    <field name="closure_date" readonly="1"/>
+                                    <field name="closure_summary" readonly="1"/>
+                                    <field name="final_payment_due_date" readonly="1"/>
+                                    <field name="final_payment_completed" readonly="1"/>
+                                </group>
+                                <group string="Your Entitlements">
+                                    <field name="employment_certificate_issued" readonly="1"/>
+                                    <field name="severance_applicable" readonly="1"/>
+                                    <field name="severance_amount" readonly="1"
+                                           invisible="not severance_applicable"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==================== ACTIONS ==================== -->
+    <record id="action_hr_disciplinary_case" model="ir.actions.act_window">
+        <field name="name">Disciplinary Cases</field>
+        <field name="res_model">hr.disciplinary.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No disciplinary cases yet. Create one to get started.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_hr_disciplinary_case_employee" model="ir.actions.act_window">
+        <field name="name">My Disciplinary Cases</field>
+        <field name="res_model">hr.disciplinary.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_hr_disciplinary_case_list_employee')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_hr_disciplinary_case_form_employee')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                You have no disciplinary cases on record.
+            </p>
+        </field>
+    </record>
+
+</odoo>

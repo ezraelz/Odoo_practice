@@ -1,0 +1,23 @@
+{
+    'name': 'Policy and Compliance Management',
+    'version': '18.0.1.0.0',
+    'summary': 'Policy repository, distribution, acknowledgment, and compliance tracking',
+    'category': 'Human Resources',
+    'author': 'Besufikad Lemma',
+    'license': 'LGPL-3',
+    'depends': ['hr', 'mail'],
+    'data': [
+        'security/policy_compliance_security.xml',
+        'security/ir.model.access.csv',
+        'data/policy_employee_type_data.xml',
+        'data/ir_cron_data.xml',
+        'views/policy_category_views.xml',
+        'views/policy_employee_type_views.xml',
+        'views/policy_document_views.xml',
+        'views/policy_version_views.xml',
+        'views/policy_assignment_views.xml',
+        'views/hr_employee_views.xml',
+    ],
+    'installable': True,
+    'application': True,
+}

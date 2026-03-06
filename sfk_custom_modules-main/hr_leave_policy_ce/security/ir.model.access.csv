@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_leave_annual_entitlement_base_user,hr.leave.annual.entitlement base user,model_hr_leave_annual_entitlement,base.group_user,1,0,0,0
+access_hr_leave_annual_entitlement_hr_user,hr.leave.annual.entitlement hr user,model_hr_leave_annual_entitlement,hr.group_hr_user,1,0,0,0
+access_hr_leave_annual_entitlement_manager,hr.leave.annual.entitlement manager,model_hr_leave_annual_entitlement,hr_holidays.group_hr_holidays_user,1,1,1,1
+access_hr_leave_annual_usage_base_user,hr.leave.annual.usage base user,model_hr_leave_annual_usage,base.group_user,1,0,0,0
+access_hr_leave_annual_usage_hr_user,hr.leave.annual.usage hr user,model_hr_leave_annual_usage,hr.group_hr_user,1,0,0,0
+access_hr_leave_annual_usage_manager,hr.leave.annual.usage manager,model_hr_leave_annual_usage,hr_holidays.group_hr_holidays_user,1,1,1,1

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="seq_hr_disciplinary_case" model="ir.sequence">
+            <field name="name">Disciplinary Case</field>
+            <field name="code">hr.disciplinary.case</field>
+            <field name="prefix">DISC/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="offense_lateness_minor" model="hr.offense.classification">
+            <field name="name">Occasional Lateness / Minor Absence</field>
+            <field name="severity_level">minor</field>
+            <field name="approval_level">hr</field>
+            <field name="investigation_required">False</field>
+            <field name="is_immediate_dismissal">False</field>
+        </record>
+
+        <record id="offense_minor_rule_violation" model="hr.offense.classification">
+            <field name="name">Minor Workplace Rule Violation</field>
+            <field name="severity_level">minor</field>
+            <field name="approval_level">hr</field>
+            <field name="investigation_required">False</field>
+            <field name="is_immediate_dismissal">False</field>
+        </record>
+
+        <record id="offense_repeated_lateness" model="hr.offense.classification">
+            <field name="name">Repeated Lateness (8+ times / 6 months)</field>
+            <field name="severity_level">moderate</field>
+            <field name="approval_level">hr</field>
+            <field name="investigation_required">False</field>
+            <field name="is_immediate_dismissal">False</field>
+        </record>
+
+        <record id="offense_insubordination" model="hr.offense.classification">
+            <field name="name">Insubordination / Disrespectful Behavior</field>
+            <field name="severity_level">moderate</field>
+            <field name="approval_level">hr</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">False</field>
+        </record>
+
+        <record id="offense_performance_failure" model="hr.offense.classification">
+            <field name="name">Consistent Failure to Meet Performance Standards</field>
+            <field name="severity_level">moderate</field>
+            <field name="approval_level">manager</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">False</field>
+        </record>
+
+        <record id="offense_unauthorized_absence" model="hr.offense.classification">
+            <field name="name">Unauthorized Absence (5+ days / 6 months)</field>
+            <field name="severity_level">serious</field>
+            <field name="approval_level">manager</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">False</field>
+        </record>
+
+        <record id="offense_property_damage" model="hr.offense.classification">
+            <field name="name">Careless Damage to Company Property</field>
+            <field name="severity_level">serious</field>
+            <field name="approval_level">manager</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">False</field>
+        </record>
+
+        <record id="offense_fraud" model="hr.offense.classification">
+            <field name="name">Deceitful or Fraudulent Conduct (Art. 27)</field>
+            <field name="severity_level">gross</field>
+            <field name="approval_level">executive</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">True</field>
+        </record>
+
+        <record id="offense_misappropriation" model="hr.offense.classification">
+            <field name="name">Misappropriation of Property or Funds (Art. 27)</field>
+            <field name="severity_level">gross</field>
+            <field name="approval_level">executive</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">True</field>
+        </record>
+
+        <record id="offense_endangering_life" model="hr.offense.classification">
+            <field name="name">Endangering Life or Property Intentionally (Art. 27)</field>
+            <field name="severity_level">gross</field>
+            <field name="approval_level">executive</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">True</field>
+        </record>
+
+        <record id="offense_drugs_alcohol" model="hr.offense.classification">
+            <field name="name">Drug or Alcohol Impairment at Workplace (Art. 27)</field>
+            <field name="severity_level">gross</field>
+            <field name="approval_level">executive</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">True</field>
+        </record>
+
+        <record id="offense_sexual_harassment" model="hr.offense.classification">
+            <field name="name">Sexual Harassment or Violence (Art. 27)</field>
+            <field name="severity_level">gross</field>
+            <field name="approval_level">executive</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">True</field>
+        </record>
+
+        <record id="offense_physical_abuse" model="hr.offense.classification">
+            <field name="name">Physical Abuse at Workplace (Art. 27)</field>
+            <field name="severity_level">gross</field>
+            <field name="approval_level">executive</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">True</field>
+        </record>
+
+        <record id="offense_criminal_conviction" model="hr.offense.classification">
+            <field name="name">Criminal Conviction Disqualifying Employment (Art. 27)</field>
+            <field name="severity_level">gross</field>
+            <field name="approval_level">executive</field>
+            <field name="investigation_required">True</field>
+            <field name="is_immediate_dismissal">True</field>
+        </record>
+
+    </data>
+</odoo>

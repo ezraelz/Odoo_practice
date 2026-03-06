@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="offer_template_1">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family:'Times New Roman', serif; line-height:1.65;">
+                        <h2>Offer Letter</h2>
+                        <t t-if="o.rendered_body_html">
+                            <t t-raw="o.rendered_body_html"/>
+                        </t>
+                        <t t-else="">
+                            <p>Dear <t t-esc="o.applicant_id.partner_name or o.applicant_id.name"/>,</p>
+                            <p>
+                                We are pleased to offer you the position of
+                                <strong><t t-esc="o.job_position.name or ''"/></strong> at
+                                <strong><t t-esc="o.company_id.name"/></strong>, effective from
+                                <strong><t t-esc="o.start_date"/></strong>.
+                            </p>
+                            <p>
+                                Your compensation will be <strong><t t-esc="'%.2f' % o.salary"/> <t t-esc="o.currency_id.name"/></strong>
+                                on a <strong><t t-esc="o.salary_type == 'monthly' and 'monthly' or 'yearly'"/></strong> basis
+                                under a <strong><t t-esc="o.contract_type_id.name or ''"/></strong> contract.
+                            </p>
+                            <p>
+                                We are confident in the value you will bring to our organization, and we look forward to
+                                your positive response.
+                            </p>
+                            <p>Sincerely,<br/>HR Department</p>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="offer_template_2">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family:Georgia, serif; line-height:1.7;">
+                        <h2>Employment Offer</h2>
+                        <t t-if="o.rendered_body_html">
+                            <t t-raw="o.rendered_body_html"/>
+                        </t>
+                        <t t-else="">
+                            <p>Dear <t t-esc="o.applicant_id.partner_name or o.applicant_id.name"/>,</p>
+                            <p>
+                                Following the interview process, <t t-esc="o.company_id.name"/> is delighted to invite you
+                                to join us as <strong><t t-esc="o.job_position.name or ''"/></strong>.
+                            </p>
+                            <p>
+                                Your expected start date is <strong><t t-esc="o.start_date"/></strong>, with a regular work
+                                schedule of <strong><t t-esc="o.working_schedule or ''"/></strong>. The compensation package
+                                offered is <strong><t t-esc="'%.2f' % o.salary"/> <t t-esc="o.currency_id.name"/></strong>
+                                (<t t-esc="o.salary_type == 'monthly' and 'monthly' or 'yearly'"/>).
+                            </p>
+                            <p>
+                                Benefits included in this offer: <t t-esc="o.benefits or ''"/>.
+                                Additional terms: <t t-esc="o.additional_terms or ''"/>.
+                            </p>
+                            <p>
+                                We look forward to your acceptance and to a successful collaboration.
+                            </p>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="offer_template_3">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family:'Palatino Linotype', serif; line-height:1.65;">
+                        <h2>Formal Job Offer</h2>
+                        <t t-if="o.rendered_body_html">
+                            <t t-raw="o.rendered_body_html"/>
+                        </t>
+                        <t t-else="">
+                            <p>Dear <t t-esc="o.applicant_id.partner_name or o.applicant_id.name"/>,</p>
+                            <p>
+                                This letter confirms our formal offer for the role of
+                                <strong><t t-esc="o.job_position.name or ''"/></strong> at
+                                <strong><t t-esc="o.company_id.name"/></strong>.
+                            </p>
+                            <p>
+                                Employment will commence on <strong><t t-esc="o.start_date"/></strong>, and your proposed
+                                compensation is <strong><t t-esc="'%.2f' % o.salary"/> <t t-esc="o.currency_id.name"/></strong>
+                                on a <t t-esc="o.salary_type == 'monthly' and 'monthly' or 'yearly'"/> basis.
+                            </p>
+                            <p>
+                                Your contract type is <strong><t t-esc="o.contract_type_id.name or ''"/></strong>. Other terms include:
+                                <t t-esc="o.additional_terms or ''"/>.
+                            </p>
+                            <p>We would be pleased to welcome you to the team.</p>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="offer_template_4">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family:Cambria, Georgia, serif; line-height:1.7;">
+                        <h2 style="text-align:center;">Official Offer of Employment</h2>
+                        <t t-if="o.rendered_body_html">
+                            <t t-raw="o.rendered_body_html"/>
+                        </t>
+                        <t t-else="">
+                            <p><strong>Date:</strong> <t t-esc="o.offer_date"/></p>
+                            <p>Dear <t t-esc="o.applicant_id.partner_name or o.applicant_id.name"/>,</p>
+                            <p>
+                                We are pleased to make you an official offer to join <t t-esc="o.company_id.name"/> as
+                                <strong><t t-esc="o.job_position.name or ''"/></strong>. Your employment is planned to begin
+                                on <strong><t t-esc="o.start_date"/></strong> at <strong><t t-esc="o.work_location or ''"/></strong>.
+                            </p>
+                            <p>
+                                The compensation for this position is <strong><t t-esc="'%.2f' % o.salary"/> <t t-esc="o.currency_id.name"/></strong>,
+                                paid on a <t t-esc="o.salary_type == 'monthly' and 'monthly' or 'yearly'"/> basis.
+                            </p>
+                            <p>
+                                Notes and clarifications: <t t-esc="o.notes or ''"/>.
+                            </p>
+                            <p>Sincerely,<br/>HR Department</p>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="offer_template_5">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family:'Garamond', serif; line-height:1.75;">
+                        <h2>Corporate Offer Letter</h2>
+                        <t t-if="o.rendered_body_html">
+                            <t t-raw="o.rendered_body_html"/>
+                        </t>
+                        <t t-else="">
+                            <p>Dear <t t-esc="o.applicant_id.partner_name or o.applicant_id.name"/>,</p>
+                            <p>
+                                We are delighted to extend this corporate employment offer for the role of
+                                <strong><t t-esc="o.job_position.name or ''"/></strong> at <strong><t t-esc="o.company_id.name"/></strong>.
+                                Your anticipated start date is <strong><t t-esc="o.start_date"/></strong>.
+                            </p>
+                            <p>
+                                Under this offer, your compensation will be <strong><t t-esc="'%.2f' % o.salary"/> <t t-esc="o.currency_id.name"/></strong>
+                                (<t t-esc="o.salary_type == 'monthly' and 'monthly' or 'yearly'"/>), with working hours based on
+                                <strong><t t-esc="o.working_schedule or ''"/></strong>.
+                            </p>
+                            <p>
+                                Benefits: <t t-esc="o.benefits or ''"/>.
+                                Additional terms: <t t-esc="o.additional_terms or ''"/>.
+                            </p>
+                            <p>
+                                We look forward to building a long and successful journey together.
+                            </p>
+                        </t>
+                        <p>Accepted by: _____________________</p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

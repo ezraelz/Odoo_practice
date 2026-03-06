@@ -1,0 +1,15 @@
+docker compose down
+docker compose up -d
+docker exec odoo-odoo-1 odoo -u job_offer -d odoo --stop-after-init
+docker exec odoo-odoo-1 odoo -u equipment_tracker -d postgres
+docker compose restart odoo
+
+docker exec odoo-odoo-1 odoo -u job_offer -d odoo --stop-after-init --dev=all
+
+# 1. Update module
+docker exec odoo-odoo-1 odoo -u job_offer -d odoo --stop-after-init
+
+# 2. Restart Odoo
+docker compose restart odoo
+
+# 3. Refresh browser

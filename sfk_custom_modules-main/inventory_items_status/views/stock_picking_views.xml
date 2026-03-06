@@ -1,0 +1,99 @@
+<!-- xml -->
+<odoo>
+  <record id="view_picking_form_inherit_items_status" model="ir.ui.view">
+    <field name="name">stock.picking.form.inherit.items.status</field>
+    <field name="model">stock.picking</field>
+    <field name="inherit_id" ref="stock.view_picking_form"/>
+    <field name="arch" type="xml">
+     <xpath expr="//sheet//group" position="inside">
+    <group string="Items Condition">
+        <field name="has_damaged"/>
+        <field name="damaged_qty"
+               invisible="not has_damaged"
+               required="has_damaged"/>
+
+        <field name="has_missing"/>
+        <field name="missing_qty"
+               invisible="not has_missing"
+               required="has_missing"/>
+    </group>
+</xpath>
+
+    </field>
+  </record>
+   <record id="view_picking_list_inherit_items_status" model="ir.ui.view">
+        <field name="name">stock.picking.list.inherit.items.status</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+
+            <!-- List View -->
+            <xpath expr="//list" position="attributes">
+    <attribute name="decoration-success">
+        not has_damaged and not has_missing
+    </attribute>
+    <attribute name="decoration-danger">
+        has_damaged
+    </attribute>
+    <attribute name="decoration-warning">
+        has_missing
+    </attribute>
+
+
+     </xpath>
+
+      <xpath expr="//field[@name='state']" position="after">
+
+    <field name="status_tag"
+           widget="badge"
+           decoration-success="status_tag == 'good'"
+           decoration-danger="status_tag == 'damaged'"
+           decoration-warning="status_tag == 'missing'"
+           decoration-info="status_tag == 'both'"/>
+
+        </xpath>
+
+
+        </field>
+    </record>
+
+  <!-- Search View -->
+  <record id="view_picking_search_inherit_items_status" model="ir.ui.view">
+    <field name="name">stock.picking.search.inherit.items.status</field>
+    <field name="model">stock.picking</field>
+    <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+    <field name="arch" type="xml">
+
+        <xpath expr="//search" position="inside">
+
+            <separator/>
+
+            <filter string="Good"
+                    name="filter_good"
+                    domain="[('status_tag','=','good')]"/>
+
+            <filter string="Damaged"
+                    name="filter_damaged"
+                    domain="[('status_tag','=','damaged')]"/>
+
+            <filter string="Missing"
+                    name="filter_missing"
+                    domain="[('status_tag','=','missing')]"/>
+
+            <filter string="Damaged &amp; Missing"
+                    name="filter_both"
+                    domain="[('status_tag','=','both')]"/>
+
+            <separator/>
+
+            <group expand="0" string="Group By">
+                <filter string="Items Status"
+                        name="group_by_status"
+                        context="{'group_by':'status_tag'}"/>
+            </group>
+
+        </xpath>
+    </field>
+</record>
+
+</odoo>

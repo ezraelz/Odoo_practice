@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_contract_form_probation" model="ir.ui.view">
+        <field name="name">hr.contract.form.probation</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_confirm_probation"
+                        type="object"
+                        string="Confirm Probation"
+                        class="btn-primary"
+                        groups="hr_contract.group_hr_contract_manager"
+                        invisible="not is_probation or state not in ['draft', 'open']"/>
+                <button name="action_extend_probation"
+                        type="object"
+                        string="Extend Probation"
+                        groups="hr_contract.group_hr_contract_manager"
+                        invisible="not is_probation or state not in ['draft', 'open']"/>
+                <button name="action_terminate_during_probation"
+                        type="object"
+                        string="Terminate During Probation"
+                        class="btn-secondary"
+                        groups="hr_contract.group_hr_contract_manager"
+                        confirm="This will close the contract immediately. Do you want to continue?"
+                        invisible="not is_probation or state not in ['draft', 'open']"/>
+            </xpath>
+
+            <xpath expr="//field[@name='date_start']" position="after">
+                <field name="is_probation"/>
+                <field name="probation_extension_working_days" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

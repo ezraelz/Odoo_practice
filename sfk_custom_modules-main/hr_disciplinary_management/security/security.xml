@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ==================== -->
+
+        <!-- Managers see all cases -->
+        <record id="rule_case_manager" model="ir.rule">
+            <field name="name">Disciplinary Case: Manager sees all</field>
+            <field name="model_id" ref="model_hr_disciplinary_case"/>
+            <field name="groups" eval="[(4, ref('group_hr_disciplinary_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Officers see all cases -->
+        <record id="rule_case_officer" model="ir.rule">
+            <field name="name">Disciplinary Case: Officer sees all</field>
+            <field name="model_id" ref="model_hr_disciplinary_case"/>
+            <field name="groups" eval="[(4, ref('group_hr_disciplinary_officer'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Employees see only their own cases -->
+        <record id="rule_case_employee" model="ir.rule">
+            <field name="name">Disciplinary Case: Employee sees and responds to own only</field>
+            <field name="model_id" ref="model_hr_disciplinary_case"/>
+            <field name="groups" eval="[(4, ref('group_hr_disciplinary_employee'))]"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- ==================== -->
+
+        <!-- Managers see all appeals -->
+        <record id="rule_appeal_manager" model="ir.rule">
+            <field name="name">Disciplinary Appeal: Manager sees all</field>
+            <field name="model_id" ref="model_hr_disciplinary_appeal"/>
+            <field name="groups" eval="[(4, ref('group_hr_disciplinary_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Officers see all appeals -->
+        <record id="rule_appeal_officer" model="ir.rule">
+            <field name="name">Disciplinary Appeal: Officer sees all</field>
+            <field name="model_id" ref="model_hr_disciplinary_appeal"/>
+            <field name="groups" eval="[(4, ref('group_hr_disciplinary_officer'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Employees can only see and create their own appeals -->
+        <record id="rule_appeal_employee" model="ir.rule">
+            <field name="name">Disciplinary Appeal: Employee sees own only</field>
+            <field name="model_id" ref="model_hr_disciplinary_appeal"/>
+            <field name="groups" eval="[(4, ref('group_hr_disciplinary_employee'))]"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+    </data>
+</odoo>

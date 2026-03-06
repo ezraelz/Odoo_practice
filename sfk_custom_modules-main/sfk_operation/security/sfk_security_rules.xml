@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- 
+            Global Rule: Multi-Company
+            Ensure users only see records from their allowed companies.
+            (Applied to all models with company_id)
+        -->
+        <record id="sfk_program_comp_rule" model="ir.rule">
+            <field name="name">Program Multi-Company</field>
+            <field name="model_id" ref="model_sfk_program"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="sfk_session_comp_rule" model="ir.rule">
+            <field name="name">Session Multi-Company</field>
+            <field name="model_id" ref="model_sfk_session"/>
+            <field name="domain_force">['|', ('center_id', '=', False), ('center_id', 'in', company_ids)]</field>
+        </record>
+        <record id="sfk_student_comp_rule" model="ir.rule">
+            <field name="name">Student Multi-Company</field>
+            <field name="model_id" ref="model_sfk_student"/>
+            <field name="domain_force">['|', ('program_id', '=', False), '|', ('program_id.company_id', '=', False), ('program_id.company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="sfk_enrollment_comp_rule" model="ir.rule">
+            <field name="name">Enrollment Multi-Company</field>
+            <field name="model_id" ref="model_sfk_enrollment"/>
+            <field name="domain_force">['|', ('center_id', '=', False), ('center_id', 'in', company_ids)]</field>
+        </record>
+        <record id="sfk_attendance_comp_rule" model="ir.rule">
+            <field name="name">Attendance Multi-Company</field>
+            <field name="model_id" ref="model_sfk_attendance"/>
+            <field name="domain_force">['|', ('session_id.center_id', '=', False), ('session_id.center_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- 
+            Operation Manager: Full Access
+            These rules override inherited restrictions from Coach Manager.
+        -->
+        <record id="sfk_program_manager_rule" model="ir.rule">
+            <field name="name">Operation Manager: All Programs</field>
+            <field name="model_id" ref="model_sfk_program"/>
+            <field name="groups" eval="[(4, ref('group_sfk_manager'))]"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+        </record>
+
+        <record id="sfk_student_manager_rule" model="ir.rule">
+            <field name="name">Operation Manager: All Students</field>
+            <field name="model_id" ref="model_sfk_student"/>
+            <field name="groups" eval="[(4, ref('group_sfk_manager'))]"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+        </record>
+
+        <record id="sfk_session_manager_rule" model="ir.rule">
+            <field name="name">Operation Manager: All Sessions</field>
+            <field name="model_id" ref="model_sfk_session"/>
+            <field name="groups" eval="[(4, ref('group_sfk_manager'))]"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+        </record>
+
+        <!-- 
+            Coach Manager / Supervisor Rule:
+            See programs where they are assigned as Manager, Coach, or Supervisor.
+        -->
+        <record id="sfk_program_coach_rule" model="ir.rule">
+            <field name="name">Coach/Supervisor: Assigned Programs</field>
+            <field name="model_id" ref="model_sfk_program"/>
+            <field name="groups" eval="[(4, ref('group_sfk_coach_manager')), (4, ref('group_sfk_supervisor'))]"/>
+            <field name="domain_force">['|','|', ('manager_id.user_id','=',user.id), ('coach_id.user_id','=',user.id), ('supervisor_id.user_id','=',user.id)]</field>
+        </record>
+
+        <!-- 
+            Coach/Supervisor: See Sessions of assigned programs
+        -->
+        <record id="sfk_session_coach_rule" model="ir.rule">
+            <field name="name">Coach/Supervisor: Sessions of Assigned Programs</field>
+            <field name="model_id" ref="model_sfk_session"/>
+            <field name="groups" eval="[(4, ref('group_sfk_coach_manager')), (4, ref('group_sfk_supervisor'))]"/>
+            <field name="domain_force">['|','|', ('program_id.manager_id.user_id','=',user.id), ('program_id.coach_id.user_id','=',user.id), ('program_id.supervisor_id.user_id','=',user.id)]</field>
+        </record>
+
+        <!-- 
+            Instructor Rule:
+            See sessions where they are Lead or Assistant.
+        -->
+        <record id="sfk_session_instructor_rule" model="ir.rule">
+            <field name="name">Instructor: Assigned Sessions</field>
+            <field name="model_id" ref="model_sfk_session"/>
+            <field name="groups" eval="[(4, ref('group_sfk_instructor'))]"/>
+            <field name="domain_force">['|', ('lead_instructor_id.user_id','=',user.id), ('assistant_instructor_id.user_id','=',user.id)]</field>
+        </record>
+
+        <!-- 
+            Instructor Rule: Students
+            Only see students in programs they are assigned to.
+        -->
+        <record id="sfk_student_instructor_rule" model="ir.rule">
+            <field name="name">Instructor: Assigned Program Students</field>
+            <field name="model_id" ref="model_sfk_student"/>
+            <field name="groups" eval="[(4, ref('group_sfk_instructor'))]"/>
+            <field name="domain_force">[
+                '|', ('program_id.coach_id.user_id', '=', user.id),
+                '|', ('program_id.manager_id.user_id', '=', user.id),
+                '|', ('program_id.supervisor_id.user_id', '=', user.id),
+                '|', ('program_id.session_ids.lead_instructor_id.user_id', '=', user.id),
+                ('program_id.session_ids.assistant_instructor_id.user_id', '=', user.id)
+            ]</field>
+        </record>
+
+        <!-- 
+            Sales Rule:
+            See Students and Enrollments. 
+            For Programs: Restricted by Multi-Company (removed [(1,'=',1)])
+        -->
+        <record id="sfk_program_sales_rule" model="ir.rule">
+            <field name="name">Sales: Multi-Company Programs</field>
+            <field name="model_id" ref="model_sfk_program"/>
+            <field name="groups" eval="[(4, ref('group_sfk_sales'))]"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- 
+            Sales Rule: Attendance
+            Can see attendance for Center-based programs.
+        -->
+        <record id="sfk_attendance_sales_rule" model="ir.rule">
+            <field name="name">Sales: Center-Based Attendance</field>
+            <field name="model_id" ref="model_sfk_attendance"/>
+            <field name="groups" eval="[(4, ref('group_sfk_sales'))]"/>
+            <field name="domain_force">[('session_id.program_id.program_type', '=', 'center')]</field>
+        </record>
+
+        <!-- Quality: Multi-Company -->
+        <record id="sfk_quality_template_comp_rule" model="ir.rule">
+            <field name="name">Quality Template Multi-Company</field>
+            <field name="model_id" ref="model_sfk_quality_template"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="sfk_quality_request_comp_rule" model="ir.rule">
+            <field name="name">Quality Request Multi-Company</field>
+            <field name="model_id" ref="model_sfk_quality_request"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+        <record id="sfk_quality_assessment_comp_rule" model="ir.rule">
+            <field name="name">Quality Assessment Multi-Company</field>
+            <field name="model_id" ref="model_sfk_quality_assessment"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Quality: Role-scoped assessment visibility -->
+        <record id="sfk_quality_assessment_instructor_rule" model="ir.rule">
+            <field name="name">Instructor: Own Session Assessments</field>
+            <field name="model_id" ref="model_sfk_quality_assessment"/>
+            <field name="groups" eval="[(4, ref('group_sfk_instructor'))]"/>
+            <field name="domain_force">[('template_role_type', '=', 'instructor'), ('assessor_id', '=', user.id)]</field>
+        </record>
+        <record id="sfk_quality_assessment_supervisor_rule" model="ir.rule">
+            <field name="name">Supervisor: Own Assessments</field>
+            <field name="model_id" ref="model_sfk_quality_assessment"/>
+            <field name="groups" eval="[(4, ref('group_sfk_supervisor'))]"/>
+            <field name="domain_force">[('assessor_id', '=', user.id)]</field>
+        </record>
+        <record id="sfk_quality_assessment_coach_rule" model="ir.rule">
+            <field name="name">Coach Manager: Own Assessments</field>
+            <field name="model_id" ref="model_sfk_quality_assessment"/>
+            <field name="groups" eval="[(4, ref('group_sfk_coach_manager'))]"/>
+            <field name="domain_force">[('assessor_id', '=', user.id)]</field>
+        </record>
+        <record id="sfk_quality_assessment_manager_rule" model="ir.rule">
+            <field name="name">Operation Manager: All Assessments</field>
+            <field name="model_id" ref="model_sfk_quality_assessment"/>
+            <field name="groups" eval="[(4, ref('group_sfk_manager'))]"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+        </record>
+
+    </data>
+</odoo>

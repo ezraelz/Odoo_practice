@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Menus -->
+        <menuitem id="sfk_operation_menu_root"
+                  name="STEM Operations"
+                  sequence="10"
+        web_icon="sfk_operation,static/description/icon.png"
+        />
+
+        <menuitem id="sfk_operation_program_menu"
+                  name="Programs"
+                  parent="sfk_operation_menu_root"
+                  action="sfk_operation_program_action"
+                  sequence="10"/>
+
+        <menuitem id="sfk_operation_program_session_menu"
+                  name="Program Sessions"
+                  parent="sfk_operation_menu_root"
+                  action="sfk_operation_program_session_action"
+                  groups="sfk_operation.group_sfk_instructor"
+                  sequence="20"/>
+
+        <menuitem id="sfk_operation_student_menu"
+                  name="Students"
+                  parent="sfk_operation_menu_root"
+                  action="sfk_operation_student_action"
+                  groups="sfk_operation.group_sfk_sales"
+                  sequence="30"/>
+
+        <menuitem id="sfk_operation_attendance_menu"
+                  name="Mark Attendance"
+                  parent="sfk_operation_menu_root"
+                  action="sfk_operation_attendance_marking_action"
+                  groups="sfk_operation.group_sfk_instructor"
+                  sequence="50"/>
+
+        <menuitem id="sfk_operation_config_menu"
+                  name="Configuration"
+                  parent="sfk_operation_menu_root"
+                  groups="sfk_operation.group_sfk_manager"
+                  sequence="100"/>
+
+        <menuitem id="sfk_operation_room_menu"
+                  name="Rooms"
+                  parent="sfk_operation_config_menu"
+                  action="sfk_operation_room_action"
+                  sequence="10"/>
+
+        <menuitem id="sfk_operation_course_menu"
+                  name="Courses"
+                  parent="sfk_operation_config_menu"
+                  action="sfk_operation_course_action"
+                  sequence="15"/>
+        
+        <menuitem id="sfk_operation_permanent_schedule_menu"
+                  name="Permanent Schedules"
+                  parent="sfk_operation_config_menu"
+                  action="sfk_operation_permanent_schedule_action"
+                  sequence="20"/>
+        <menuitem id="sfk_operation_quality_menu"
+                  name="Quality Control"
+                  parent="sfk_operation_menu_root"
+                  sequence="60"/>
+
+        <menuitem id="sfk_operation_quality_assessment_menu"
+                  name="Assessments"
+                  parent="sfk_operation_quality_menu"
+                  action="sfk_quality_assessment_action"
+                  groups="sfk_operation.group_sfk_instructor,sfk_operation.group_sfk_supervisor,sfk_operation.group_sfk_coach_manager,sfk_operation.group_sfk_manager"
+                  sequence="10"/>
+
+        <menuitem id="sfk_operation_quality_request_menu"
+                  name="Requests"
+                  parent="sfk_operation_quality_menu"
+                  action="sfk_quality_request_action"
+                  groups="sfk_operation.group_sfk_supervisor,sfk_operation.group_sfk_coach_manager,sfk_operation.group_sfk_manager"
+                  sequence="20"/>
+
+        <menuitem id="sfk_operation_quality_template_menu"
+                  name="Templates"
+                  parent="sfk_operation_quality_menu"
+                  action="sfk_quality_template_action"
+                  groups="sfk_operation.group_sfk_manager"
+                  sequence="30"/>
+
+    </data>
+</odoo>

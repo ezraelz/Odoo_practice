@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_complaint_search" model="ir.ui.view">
+        <field name="name">hr.complaint.search</field>
+        <field name="model">hr.complaint</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="subject"/>
+                <field name="employee_id"/>
+                <field name="complaint_type"/>
+                <field name="status"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                <filter name="filter_open" string="Open" domain="[('status', 'in', ['submitted', 'in_review'])]"/>
+                <filter name="filter_closed" string="Closed" domain="[('status', 'in', ['resolved', 'rejected'])]"/>
+                <separator/>
+                <filter name="filter_my_complaints" string="My Complaints" domain="[('employee_user_id', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Type" name="group_type" context="{'group_by': 'complaint_type'}"/>
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Submission Month" name="group_month" context="{'group_by': 'submitted_on:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_hr_complaint_reject_wizard" model="ir.ui.view">
+        <field name="name">hr.complaint.reject.wizard.form</field>
+        <field name="model">hr.complaint.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reject Complaint">
+                <sheet>
+                    <group>
+                        <field name="complaint_id" invisible="1"/>
+                        <field name="reason" placeholder="Enter rejection reason to send to employee..."/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Confirm" type="object" name="action_confirm" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_complaint_list" model="ir.ui.view">
+        <field name="name">hr.complaint.list</field>
+        <field name="model">hr.complaint</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="status == 'rejected'" decoration-success="status == 'resolved'" decoration-info="status == 'in_review'">
+                <field name="subject"/>
+                <field name="employee_id" string="Employee"/>
+                <field name="complaint_type" string="Type"/>
+                <field name="status" string="Status" widget="badge" decoration-info="status == 'draft'" decoration-warning="status == 'submitted'" decoration-primary="status == 'in_review'" decoration-success="status == 'resolved'" decoration-danger="status == 'rejected'"/>
+                <field name="submitted_on" string="Submitted On"/>
+                <field name="closed_on" string="Closed On"/>
+                <field name="created_on" string="Created"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hr_complaint_kanban" model="ir.ui.view">
+        <field name="name">hr.complaint.kanban</field>
+        <field name="model">hr.complaint</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile o_kanban_record_button">
+                <field name="subject"/>
+                <field name="employee_id"/>
+                <field name="complaint_type"/>
+                <field name="status"/>
+                <field name="submitted_on"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="o_kanban_card">
+                            <div class="o_kanban_primary">
+                                <div class="o_kanban_record_title">
+                                    <field name="subject"/>
+                                </div>
+                                <div class="o_kanban_record_subtitle">
+                                    <span class="o_kanban_field"> <field name="employee_id"/> </span>
+                                    <span class="o_kanban_field"> • <field name="complaint_type"/> </span>
+                                </div>
+                            </div>
+                            <div class="o_kanban_bottom">
+                                <span class="o_kanban_field o_field_chip">
+                                    <field name="status" widget="badge"/>
+                                </span>
+                                <span class="o_kanban_field o_muted"> <field name="submitted_on"/> </span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_hr_complaint_form" model="ir.ui.view">
+        <field name="name">hr.complaint.form</field>
+        <field name="model">hr.complaint</field>
+        <field name="arch" type="xml">
+            <form string="HR Complaint">
+                <header>
+                    <button name="action_submit" type="object" string="Submit Complaint" class="btn-primary" invisible="status != 'draft' or employee_user_id != uid"/>
+                    <button name="action_in_review" type="object" string="Start Review" class="btn-primary" groups="hr.group_hr_manager" invisible="status != 'submitted'"/>
+                    <button name="action_resolve" type="object" string="Resolve" class="btn-success" groups="hr.group_hr_manager" invisible="status not in ('submitted', 'in_review')"/>
+                    <button name="action_open_reject_wizard" type="object" string="Reject" class="btn-danger" groups="hr.group_hr_manager" invisible="status not in ('submitted', 'in_review')"/>
+                    <button name="action_download_pdf" type="object" string="Download PDF" class="btn-secondary" icon="fa-download"/>
+                    <field name="status" widget="statusbar" statusbar_visible="draft,submitted,in_review,resolved,rejected"/>
+                </header>
+                <sheet>
+                    <group col="2">
+                        <group string="Complaint Details">
+                            <field name="subject" placeholder="Complaint Subject..." readonly="status != 'draft'"/>
+                            <field name="employee_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="employee_user_id" invisible="1"/>
+                            <field name="complaint_type" readonly="status != 'draft'"/>
+                            <field name="attachment" filename="attachment_filename" readonly="status != 'draft'"/>
+                            <field name="attachment_filename" invisible="1"/>
+                            <field name="created_on" string="Created On" readonly="status != 'draft'"/>
+                            <field name="submitted_on" readonly="1" invisible="status == 'draft'"/>
+                            <field name="closed_on" readonly="1" invisible="status not in ('resolved', 'rejected')"/>
+                            <field name="description" readonly="status != 'draft'" placeholder="Describe your complaint in detail..."/>
+                            <div class="o_form_label">
+                                Dynamic Body Placeholders: {{subject}}, {{employee_name}}, {{department}}, {{complaint_type}}, {{status}}, {{created_on}}, {{submitted_on}}, {{closed_on}}, {{description}}, {{hr_response}}, {{company_name}}
+                            </div>
+                            <field name="body_text" readonly="status != 'draft'" placeholder="Write paragraph body with placeholders, e.g. This complaint from {{employee_name}} is about {{complaint_type}}."/>
+                            <field name="hr_response" placeholder="Enter HR response..." groups="hr.group_hr_manager" invisible="status in ('draft', 'submitted')"/>
+                        </group>
+                        <group string="Print Preview">
+                            <field name="preview_pdf_html" widget="html" readonly="1" nolabel="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+</odoo>

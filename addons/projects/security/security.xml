@@ -1,0 +1,21 @@
+<odoo>
+    <!-- Own Project Only -->
+    <record id="group_project_user_own" model="res.groups">
+        <field name="name">Project: Own Only</field>
+        <field name="category_id" ref="base.module_category_operations"/>
+    </record>
+
+    <!-- All Projects -->
+    <record id="group_project_user_all" model="res.groups">
+        <field name="name">Project: All Records</field>
+        <field name="category_id" ref="base.module_category_operations"/>
+        <field name="implied_ids" eval="[(4, ref('group_project_user_own'))]"/>
+    </record>
+
+    <!-- Administrator -->
+    <record id="group_project_admin" model="res.groups">
+        <field name="name">Project: Administrator</field>
+        <field name="category_id" ref="base.module_category_operations"/>
+        <field name="implied_ids" eval="[(4, ref('group_project_user_all'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="sfk_quality_assessment_action" model="ir.actions.act_window">
+            <field name="name">Quality Assessments</field>
+            <field name="res_model">sfk.quality.assessment</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="sfk_quality_request_action" model="ir.actions.act_window">
+            <field name="name">Quality Requests</field>
+            <field name="res_model">sfk.quality.request</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="sfk_quality_template_action" model="ir.actions.act_window">
+            <field name="name">Quality Templates</field>
+            <field name="res_model">sfk.quality.template</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="sfk_quality_template_view_list" model="ir.ui.view">
+            <field name="name">sfk.quality.template.list</field>
+            <field name="model">sfk.quality.template</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="role_type"/>
+                    <field name="target_type"/>
+                    <field name="active"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="sfk_quality_template_view_form" model="ir.ui.view">
+            <field name="name">sfk.quality.template.form</field>
+            <field name="model">sfk.quality.template</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="role_type"/>
+                                <field name="target_type"/>
+                            </group>
+                            <group>
+                                <field name="company_id"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Questions">
+                                <field name="question_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence"/>
+                                        <field name="question"/>
+                                        <field name="answer_type"/>
+                                        <field name="required"/>
+                                        <field name="max_score" invisible="answer_type != 'score'"/>
+                                        <field name="options" invisible="answer_type != 'selection'"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="sfk_quality_request_view_list" model="ir.ui.view">
+            <field name="name">sfk.quality.request.list</field>
+            <field name="model">sfk.quality.request</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="request_type"/>
+                    <field name="requested_to_role"/>
+                    <field name="deadline"/>
+                    <field name="state" widget="badge"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="sfk_quality_request_view_form" model="ir.ui.view">
+            <field name="name">sfk.quality.request.form</field>
+            <field name="model">sfk.quality.request</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_request" string="Request Report" type="object" class="btn-primary" invisible="state != 'draft'" groups="sfk_operation.group_sfk_manager"/>
+                        <button name="action_done" string="Mark Done" type="object" invisible="state != 'requested'" groups="sfk_operation.group_sfk_manager"/>
+                        <button name="action_cancel" string="Cancel" type="object" invisible="state in ('done','cancelled')" groups="sfk_operation.group_sfk_manager"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,requested,done,cancelled"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="request_type"/>
+                                <field name="requested_to_role"/>
+                                <field name="deadline"/>
+                            </group>
+                            <group>
+                                <field name="session_id" invisible="request_type != 'session'"/>
+                                <field name="program_id" invisible="request_type != 'program'"/>
+                                <field name="review_period" invisible="request_type != 'program'"/>
+                                <field name="term_id" invisible="request_type != 'program' or review_period != 'term'"/>
+                                <field name="period_start" invisible="request_type != 'program' or review_period != 'custom'"/>
+                                <field name="period_end" invisible="request_type != 'program' or review_period != 'custom'"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="notes"/>
+                        </group>
+                        <group>
+                            <field name="requested_by" readonly="1"/>
+                            <field name="assessment_count" readonly="1"/>
+                        </group>
+                        <notebook>
+                            <page string="Assessments">
+                                <field name="assessment_ids" readonly="1">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="assessor_id"/>
+                                        <field name="template_role_type"/>
+                                        <field name="state"/>
+                                        <field name="submitted_on"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="sfk_quality_assessment_view_list" model="ir.ui.view">
+            <field name="name">sfk.quality.assessment.list</field>
+            <field name="model">sfk.quality.assessment</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="template_role_type"/>
+                    <field name="target_type"/>
+                    <field name="session_id" optional="show"/>
+                    <field name="program_id" optional="show"/>
+                    <field name="assessor_id"/>
+                    <field name="state" widget="badge"/>
+                    <field name="submitted_on"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="sfk_quality_assessment_view_form" model="ir.ui.view">
+            <field name="name">sfk.quality.assessment.form</field>
+            <field name="model">sfk.quality.assessment</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_submit" string="Submit" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'submitted'" groups="sfk_operation.group_sfk_manager"/>
+                        <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="state != 'submitted'" groups="sfk_operation.group_sfk_manager"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="template_id" domain="[('target_type', '=', target_type), ('role_type', '=', assessor_role)]"/>
+                                <field name="target_type"/>
+                                <field name="request_id"/>
+                            </group>
+                            <group>
+                                <field name="session_id" invisible="target_type != 'session'"/>
+                                <field name="program_id" invisible="target_type != 'program'"/>
+                                <field name="review_period" invisible="target_type != 'program'"/>
+                                <field name="term_id" invisible="target_type != 'program' or review_period != 'term'"/>
+                                <field name="period_start" invisible="target_type != 'program' or review_period != 'custom'"/>
+                                <field name="period_end" invisible="target_type != 'program' or review_period != 'custom'"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="assessor_id" readonly="1"/>
+                            <field name="assessor_role" readonly="1"/>
+                            <field name="submitted_on" readonly="1"/>
+                        </group>
+                        <notebook>
+                            <page string="Answers">
+                                <field name="line_ids">
+                                    <list editable="bottom">
+                                        <field name="question_id" readonly="1"/>
+                                        <field name="answer_type" readonly="1"/>
+                                        <field name="text_answer" invisible="answer_type != 'text'"/>
+                                        <field name="score_answer" invisible="answer_type != 'score'"/>
+                                        <field name="selection_answer" invisible="answer_type != 'selection'"/>
+                                        <field name="notes" optional="show"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Summary">
+                                <field name="summary"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

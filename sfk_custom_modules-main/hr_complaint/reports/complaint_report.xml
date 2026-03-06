@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_hr_complaint_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family:'Times New Roman', serif; line-height:1.7;">
+                        <h2>HR Complaint Report</h2>
+                        <p><strong>Subject:</strong> <t t-esc="o.subject"/></p>
+
+                        <t t-if="o.rendered_body_html">
+                            <t t-raw="o.rendered_body_html"/>
+                        </t>
+                        <t t-else="">
+                            <p>
+                                This complaint was submitted by <strong><t t-esc="o.employee_id.name"/></strong>
+                                from <strong><t t-esc="o.employee_id.department_id.name or '-'"/></strong> under
+                                the category <strong><t t-esc="dict(o._fields['complaint_type'].selection).get(o.complaint_type)"/></strong>.
+                            </p>
+                            <p>
+                                The complaint is currently marked as
+                                <strong><t t-esc="dict(o._fields['status'].selection).get(o.status)"/></strong>.
+                                It was created on <strong><t t-esc="o.created_on"/></strong>
+                                and submitted on <strong><t t-esc="o.submitted_on or '-'"/></strong>.
+                                <t t-if="o.closed_on">
+                                    It was closed on <strong><t t-esc="o.closed_on"/></strong>.
+                                </t>
+                            </p>
+                            <p>
+                                Complaint details: <t t-esc="o.description"/>
+                            </p>
+                            <p>
+                                HR response: <t t-esc="o.hr_response or 'No response yet.'"/>
+                            </p>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_hr_complaint" model="ir.actions.report">
+        <field name="name">Complaint</field>
+        <field name="model">hr.complaint</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_complaint.report_hr_complaint_document</field>
+        <field name="report_file">hr_complaint.report_hr_complaint_document</field>
+        <field name="print_report_name">(object.subject or 'Complaint')</field>
+        <field name="attachment_use">False</field>
+    </record>
+</odoo>

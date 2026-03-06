@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- sfk.program -->
+        <record id="sfk_operation_program_action" model="ir.actions.act_window">
+            <field name="name">Programs</field>
+            <field name="res_model">sfk.program</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <record id="sfk_program_view_list" model="ir.ui.view">
+            <field name="name">sfk.program.list</field>
+            <field name="model">sfk.program</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="program_type"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'running'" decoration-muted="state == 'closed'"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="sfk_program_view_form" model="ir.ui.view">
+            <field name="name">sfk.program.form</field>
+            <field name="model" >sfk.program</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_run" string="Run" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                        <button name="action_close" string="Close" type="object" class="btn-secondary" invisible="state != 'running'"/>
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,running,closed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_registered_students"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-users"
+                                invisible="program_type == 'school'"
+                                context="{'default_program_id': id, 'default_company_id': company_id}">
+                                <field name="student_count" widget="statinfo" string="Students"/>
+                            </button>
+                            <button name="%(sfk_operation_program_session_action)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-calendar"
+                                context="{'default_program_id': id}">
+                                <field name="session_count" widget="statinfo" string="Sessions"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="e.g. After-School Robotics" readonly="state != 'draft'"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="program_type" readonly="state != 'draft'"/>
+                                <field name="company_id" readonly="state != 'draft'"/>
+                                <field name="course_ids" widget="many2many_tags" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="start_date" readonly="state != 'draft'"/>
+                                <field name="end_date" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group string="Program Team">
+                            <group>
+                                <field name="manager_id" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="supervisor_id" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <!-- School-based only -->
+                            <page string="Terms &amp; Course Mapping" name="terms" invisible="program_type != 'school'">
+                                <field name="term_ids" readonly="state != 'draft'" context="{'default_program_id': id}">
+                                    <list>
+                                        <field name="name"/>
+                                        <field name="start_date"/>
+                                        <field name="end_date"/>
+                                        <field name="active"/>
+                                    </list>
+                                </field>
+                            </page>
+                            
+                            <!-- Simplified Center-based and Common Schedule -->
+                            <page string="Permanent Schedules" name="schedules">
+                                <field name="permanent_schedule_ids" context="{'default_program_id': id}" readonly="state != 'draft'">
+                                    <list editable="bottom">
+                                        <field name="term_id" domain="[('program_id', '=', parent.id)]" column_invisible="parent.program_type != 'school'" required="parent.program_type == 'school'"/>
+                                        <field name="available_course_ids" column_invisible="True"/>
+                                        <field name="course_id" 
+                                               domain="[('id', 'in', available_course_ids)]"
+                                               required="parent.program_type == 'center'"
+                                               readonly="parent.program_type == 'school'"
+                                               force_save="1"/>
+                                        <field name="grade" column_invisible="parent.program_type != 'school'" required="parent.program_type == 'school'"/>
+                                        <field name="lead_instructor_id"/>
+                                        <field name="weekday"/>
+                                        <field name="start_time" widget="float_time"/>
+                                        <field name="end_time" widget="float_time"/>
+                                        <field name="room_id"/>
+                                    </list>
+                                </field>
+                            </page>
+                            
+                            <page string="Student Enrollments" invisible="program_type != 'center'">
+                                <field name="enrollment_ids" context="{'default_program_id': id}">
+                                    <list editable="bottom">
+                                        <field name="student_id" domain="[('program_id', '=', parent.id)]"/>
+                                        <field name="available_course_ids" column_invisible="True"/>
+                                        <field name="course_id" domain="[('id', 'in', available_course_ids)]"/>
+                                        <field name="term_id" domain="[('program_id', '=', parent.id)]" column_invisible="parent.program_type != 'school'"/>
+                                        <field name="status"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+<!--                    <div class="oe_chatter">-->
+<!--                        <field name="message_follower_ids"/>-->
+<!--                        <field name="activity_ids"/>-->
+<!--                        <field name="message_ids"/>-->
+<!--                    </div>-->
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
