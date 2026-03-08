@@ -1,4 +1,13 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_project_user_own,project own,model_project_project,group_project_user_own,1,1,1,0
-access_project_user_all,project all,model_project_project,group_project_user_all,1,1,1,1
-access_project_admin,project admin,model_project_project,group_project_admin,1,1,1,1
+access_pro_project_base,pro.project.base,model_pro_project,base.group_user,1,0,0,0
+access_pro_task_base,pro.task.base,model_pro_task,base.group_user,1,0,0,0
+access_pro_task_stage_base,pro.task.stage.base,model_pro_task_stage,base.group_user,1,0,0,0
+access_pro_project_own,pro.project.own,model_pro_project,group_project_user_own,1,1,1,1
+access_pro_task_own,pro.task.own,model_pro_task,group_project_user_own,1,1,1,1
+access_pro_task_stage_own,pro.task.stage.own,model_pro_task_stage,group_project_user_own,1,0,0,0
+access_pro_project_all,pro.project.all,model_pro_project,group_project_user_all,1,1,1,1
+access_pro_task_all,pro.task.all,model_pro_task,group_project_user_all,1,1,1,1
+access_pro_task_stage_all,pro.task.stage.all,model_pro_task_stage,group_project_user_all,1,1,1,0
+access_pro_project_admin,pro.project.admin,model_pro_project,group_project_admin,1,1,1,1
+access_pro_task_admin,pro.task.admin,model_pro_task,group_project_admin,1,1,1,1
+access_pro_task_stage_admin,pro.task.stage.admin,model_pro_task_stage,group_project_admin,1,1,1,1
