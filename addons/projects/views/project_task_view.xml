@@ -32,7 +32,7 @@
     <record id="pro_task_action" model="ir.actions.act_window">
         <field name="name">Tasks</field>
         <field name="res_model">pro.task</field>
-        <field name="view_mode">list,form,kanban,calendar,graph,pivot,activity</field>
+        <field name="view_mode">kanban,list,form,calendar,graph,pivot,activity</field>
         <field name="search_view_id" ref="pro_task_search"/>
         <field name="context">{'search_default_filter_my_tasks': 1, 'default_project_id': context.get('active_id')}</field>        
         <field name="help" type="html">
@@ -168,8 +168,8 @@
                             <field name="child_task_ids" 
                                    readonly="project_id.is_locked"
                                    context="{'default_project_id': project_id, 'default_parent_task_id': id}"
-                                   mode="tree,form">
-                                <tree editable="bottom" 
+                                   mode="list,form">
+                                <list editable="bottom" 
                                       decoration-success="is_completed"
                                       multi_edit="1"
                                       default_order="sequence">
@@ -179,7 +179,7 @@
                                     <field name="assigned_to"/>
                                     <field name="due_date"/>
                                     <field name="is_completed" invisible="1"/>
-                                </tree>
+                                </list>
                                 <form>
                                     <group>
                                         <field name="name"/>
@@ -320,6 +320,7 @@
                 <field name="project_id"/>
                 <field name="stage_id"/>
                 <field name="assigned_to"/>
+                <field name="project_locked"/>
                 <field name="due_date"/>
                 <field name="description"/>
                 <field name="is_completed"/>
@@ -329,9 +330,7 @@
                 
                 <templates>
                     <t t-name="card">
-                        <div t-att-class="'oe_kanban_card oe_kanban_global_click' + (record.project_id.is_locked.raw_value ? ' o_kanban_locked' : '')"
-                            t-att-style="record.color.raw_value ? 'background-color: var(--o-colors-' + record.color.raw_value + ');' : ''"
-                            t-att-data-sequence="record.sequence.raw_value">
+                        <div t-att-class="'oe_kanban_card oe_kanban_global_click' + (record.project_locked.raw_value ? ' o_kanban_locked' : '')">
                             
                             <!-- Dropdown menu -->
                             <div class="o_dropdown_kanban dropdown">
@@ -343,7 +342,7 @@
                                     <i class="fa fa-ellipsis-v"/>
                                 </a>
                                 <ul class="dropdown-menu" role="menu">
-                                    <t t-if="!record.project_id.is_locked.raw_value">
+                                    <t t-if="!record.project_locked.raw_value">
                                         <li><a type="edit">Edit</a></li>
                                         <li><a type="delete">Delete</a></li>
                                         <li role="separator" class="divider"/>
@@ -363,12 +362,12 @@
                                     </div>
                                 </div>
                                 <div class="o_kanban_card_header_right">
-                                    <t t-if="record.project_id.is_locked.raw_value">
+                                    <t t-if="record.project_locked.raw_value">
                                         <span class="badge badge-danger" title="Project Locked">
                                             <i class="fa fa-lock"/>
                                         </span>
                                     </t>
-                                    <t t-if="record.parent_task_id.raw_value">
+                                    <t t-if="record.project_locked.raw_value">
                                         <span class="badge badge-info" title="Subtask">
                                             <i class="fa fa-level-down"/> Subtask
                                         </span>
@@ -385,7 +384,7 @@
                                 
                                 <!-- Description preview -->
                                 <div t-if="record.description.raw_value" class="text-muted small mb-2">
-                                    <t t-esc="record.description.value.split('\n')[0][:75]"/>...
+                                    <t t-esc="record.description.value.split('\n')[0].substring(0,75)"/>...
                                 </div>
                                 
                                 <!-- Assignment and due date -->
@@ -402,13 +401,6 @@
                                     <div class="col-5 text-right">
                                         <i class="fa fa-calendar"/>
                                         <field name="due_date"/>
-                                        <!-- Add overdue indicator separately -->
-                                        <t t-if="record.due_date.raw_value and !record.is_completed.raw_value">
-                                            <t t-set="today" t-value="new Date().toISOString().split('T')[0]"/>
-                                            <t t-if="record.due_date.raw_value &lt; today">
-                                                <span class="badge badge-danger ml-1">Overdue</span>
-                                            </t>
-                                        </t>
                                     </div>
                                 </div>
                                 
@@ -416,6 +408,13 @@
                                 <div class="mt-2">
                                     <field name="stage_id" widget="badge"/>
                                 </div>
+                                
+                                <!-- Overdue indicator using decoration from list view logic -->
+                                <t t-if="record.due_date.raw_value and !record.is_completed.raw_value">
+                                    <div class="mt-2 text-warning">
+                                        <i class="fa fa-clock-o"/> Check due date
+                                    </div>
+                                </t>
                             </div>
                         </div>
                     </t>
@@ -423,7 +422,6 @@
             </kanban>
         </field>
     </record>
-    
     <!-- ======================== Calendar View ======================== -->
     <record id="pro_task_calendar" model="ir.ui.view">
         <field name="name">pro.task.calendar</field>

@@ -10,13 +10,20 @@
         <record id="group_project_user_all" model="res.groups">
             <field name="name">User: All Projects</field>
             <field name="category_id" ref="base.module_category_hidden"/>
+            <field name="implied_ids" eval="[(4, ref('group_project_user_own'))]"/>
+        </record>
+
+        <record id="group_project_admin" model="res.groups">
+            <field name="name">Project: Administrator</field>
+            <field name="category_id" ref="base.module_category_operations"/>
+            <field name="implied_ids" eval="[(4, ref('group_project_user_all'))]"/>
         </record>
 
         <!-- Project Rules -->
         <record id="project_rule_own_only" model="ir.rule">
             <field name="name">Project: Own Records Only</field>
             <field name="model_id" ref="model_pro_project"/>
-            <field name="groups" eval="[(4, ref('group_project_user_own'))]"/>  <!-- FIXED -->
+            <field name="groups" eval="[(4, ref('group_project_user_own'))]"/>
             <field name="domain_force">
                 [('create_uid', '=', user.id)]
             </field>
@@ -29,7 +36,7 @@
         <record id="project_rule_all" model="ir.rule">
             <field name="name">Project: All Records</field>
             <field name="model_id" ref="model_pro_project"/>
-            <field name="groups" eval="[(4, ref('group_project_user_all'))]"/>  <!-- FIXED -->
+            <field name="groups" eval="[(4, ref('group_project_user_all'))]"/>
             <field name="domain_force">
                 [(1, '=', 1)]
             </field>
@@ -39,13 +46,15 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
-        <!-- Task Rules -->
+        <!-- Task Rules - FIXED: Show tasks assigned to user OR from user's projects -->
         <record id="task_rule_own_only" model="ir.rule">
-            <field name="name">Task: Own Project Records Only</field>
+            <field name="name">Task: Own Tasks Only</field>
             <field name="model_id" ref="model_pro_task"/>
-            <field name="groups" eval="[(4, ref('group_project_user_own'))]"/>  <!-- FIXED -->
+            <field name="groups" eval="[(4, ref('group_project_user_own'))]"/>
             <field name="domain_force">
-                [('project_id.create_uid', '=', user.id)]
+                ['|', 
+                 ('assigned_to', '=', user.id), 
+                 ('project_id.create_uid', '=', user.id)]
             </field>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
@@ -56,7 +65,7 @@
         <record id="task_rule_all" model="ir.rule">
             <field name="name">Task: All Records</field>
             <field name="model_id" ref="model_pro_task"/>
-            <field name="groups" eval="[(4, ref('group_project_user_all'))]"/>  <!-- FIXED -->
+            <field name="groups" eval="[(4, ref('group_project_user_all'))]"/>
             <field name="domain_force">
                 [(1, '=', 1)]
             </field>
@@ -66,25 +75,24 @@
             <field name="perm_unlink" eval="True"/>
         </record>
 
-        <!-- Task Stage Rules (Global - all users can see stages) -->
-        <record id="task_stage_rule_all" model="ir.rule">
-            <field name="name">Task Stage: All Records</field>
+        <!-- Task Stage Rules -->
+        <record id="task_stage_rule_readonly" model="ir.rule">
+            <field name="name">Task Stage: Read Only for Non-Admin</field>
             <field name="model_id" ref="model_pro_task_stage"/>
+            <field name="groups" eval="[(4, ref('group_project_user_own')), (4, ref('group_project_user_all'))]"/>
             <field name="domain_force">
                 [(1, '=', 1)]
             </field>
             <field name="perm_read" eval="True"/>
-            <field name="perm_write" eval="True"/>
-            <field name="perm_create" eval="True"/>
-            <field name="perm_unlink" eval="True"/>
-            <!-- No groups = global rule for all users -->
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
         </record>
 
-        <!-- Admin override rule -->
-        <record id="project_rule_admin_global" model="ir.rule">
-            <field name="name">Project: Admin Global Access</field>
-            <field name="model_id" ref="model_pro_project"/>
-            <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <record id="task_stage_rule_admin" model="ir.rule">
+            <field name="name">Task Stage: Full Access for Admin</field>
+            <field name="model_id" ref="model_pro_task_stage"/>
+            <field name="groups" eval="[(4, ref('group_project_admin'))]"/>
             <field name="domain_force">
                 [(1, '=', 1)]
             </field>

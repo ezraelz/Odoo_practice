@@ -310,7 +310,7 @@
     <record id="pro_project_action" model="ir.actions.act_window">
         <field name="name">Projects</field>
         <field name="res_model">pro.project</field>
-        <field name="view_mode">list,form,kanban,calendar,graph,pivot</field>
+        <field name="view_mode">kanban,list,form,calendar,graph,pivot</field>
         <field name="search_view_id" ref="pro_project_search"/>
         <field name="context">{'search_default_filter_my_projects': True}</field>
         <field name="help" type="html">

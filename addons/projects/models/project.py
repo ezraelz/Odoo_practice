@@ -160,6 +160,11 @@ class ProjectTask(models.Model):
         tracking=True
     )
 
+    project_locked = fields.Boolean(
+        related="project_id.is_locked",
+        store=True
+    )
+
     color = fields.Integer(string='Color Index')
 
     @api.model
