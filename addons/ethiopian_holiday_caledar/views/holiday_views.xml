@@ -1,0 +1,37 @@
+<odoo>
+    <record id="view_holiday_tree" model="ir.ui.view">
+        <field name="name">ethiopian.holiday.tree</field>
+        <field name="model">ethiopian.holiday</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="type"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_holiday_form" model="ir.ui.view">
+        <field name="name">ethiopian.holiday.form</field>
+        <field name="model">ethiopian.holiday</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="type"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="holiday_root" name="Holidays"/>
+    <menuitem id="holiday_menu" name="Ethiopian Holidays"
+              parent="holiday_root" action="holiday_action"/>
+
+    <record id="holiday_action" model="ir.actions.act_window">
+        <field name="name">Holidays</field>
+        <field name="res_model">ethiopian.holiday</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

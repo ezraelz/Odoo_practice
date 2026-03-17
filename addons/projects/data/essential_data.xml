@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">  <!-- Won't overwrite if user modifies -->
+    <data noupdate="0">  <!-- Won't overwrite if user modifies -->
         <record id="task_stage_todo" model="pro.task.stage">
             <field name="name">To Do</field>
             <field name="sequence">10</field>

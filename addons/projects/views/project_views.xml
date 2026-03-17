@@ -1,370 +1,280 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ======================== List View ======================== -->
-    <record id="pro_project_list" model="ir.ui.view">
-        <field name="name">pro.project.list</field>
-        <field name="model">pro.project</field>
+    <!-- ======================== Extend Project Views ======================== -->
+    
+    <!-- Form View - Following hr_appraisal pattern -->
+    <record id="project_project_view_form_inherit" model="ir.ui.view">
+        <field name="name">project.project.form.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
         <field name="arch" type="xml">
-            <list decoration-success="state == 'completed'" 
-                  decoration-warning="state == 'in_progress'" 
-                  decoration-danger="is_locked == True"
-                  decoration-info="state == 'draft'"
-                  multi_edit="1">
-                <field name="name" string="Project"/>
-                <field name="customer_id" string="Customer"/>
-                <field name="start_date" string="Start Date"/>
-                <field name="end_date" string="End Date"/>
-                <field name="state" string="Status" widget="badge" optional="show"/>
-                <field name="is_locked" string="Locked" optional="hide"/>
-                <field name="task_progress" string="Progress" widget="progressbar" optional="show"/>
-                <field name="create_uid" string="Created By" optional="hide"/>
-                <field name="create_date" string="Created On" optional="hide"/>
-                <field name="write_uid" string="Last Updated By" optional="hide"/>
-            </list>
-        </field>
-    </record>
-
-    <!-- ======================== Form View ======================== -->
-    <record id="pro_project_form" model="ir.ui.view">
-        <field name="name">pro.project.form</field>
-        <field name="model">pro.project</field>
-        <field name="arch" type="xml">
-            <form>
-                <header>
-                    <button name="action_start" 
-                            string="Start Project" 
-                            type="object"
-                            class="btn-primary"
-                            invisible="state != 'draft' or is_locked"/>
-                    <button name="action_complete" 
-                            string="Mark as Completed" 
-                            type="object"
-                            class="btn-success"
-                            invisible="state != 'in_progress' or is_locked"/>
-                    <button name="action_reset_to_draft" 
-                            string="Reset to Draft" 
-                            type="object"
-                            invisible="state not in ('in_progress', 'completed') or is_locked"/>
-                    
-                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,completed"/>
-                </header>
-                <sheet>
-                    <!-- Locked ribbon -->
-                    <div class="ribbon" name="lock_ribbon" 
-                         invisible="not is_locked">
-                        <span class="bg-danger">Locked</span>
+            
+            <!-- Add Tasks stat button to button box -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button class="oe_stat_button"
+                        name="%(project.act_project_project_2_project_task_all)d"
+                        icon="fa-tasks"
+                        type="action"
+                        groups="project.group_project_user" 
+                        context="{'search_default_project_id': id, 'default_project_id': id}">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="task_count"/></span>
+                        <span class="o_stat_text">Tasks</span>
                     </div>
-                    
-                    <field name="is_locked" invisible="1"/>
-                    
-                    <div class="oe_title">
-                        <label for="name" string="Project Name" class="oe_edit_only"/>
-                        <h1>
-                            <field name="name" placeholder="e.g. Website Redesign..." 
-                                   readonly="is_locked"/>
-                        </h1>
-                    </div>
-                    
-                    <group>
-                        <group string="General Information">
-                            <field name="customer_id" string="Customer" 
-                                   widget="many2one" 
-                                   placeholder="Select or create customer"
-                                   readonly="is_locked"
-                                   context="{'show_address': 1, 'show_phone': 1}"
-                                   options="{'no_create_edit': True}"/>
-                            <field name="description" string="Description" 
-                                   placeholder="Project description..."
-                                   readonly="is_locked"/>
-                        </group>
-                        
-                        <group string="Timeline &amp; Status">
-                            <field name="start_date" string="Start Date" 
-                                   widget="date"
-                                   readonly="is_locked"/>
-                            <field name="end_date" string="End Date" 
-                                   widget="date"
-                                   readonly="is_locked"/>
-                            <field name="duration_days" string="Duration (Days)"/>
-                            <field name="task_progress" string="Progress" widget="progressbar"/>
-                        </group>
-                    </group>
-                    
-                    <notebook>
-                        <page string="Tasks" name="tasks">
-                            <field name="task_ids" readonly="is_locked" mode="tree,form">
-                                <list editable="bottom" multi_edit="1">
-                                    <field name="name"/>
-                                    <field name="stage_id" context="{'default_project_id': parent.id}"/>
-                                    <field name="assigned_to" widget="many2one"/>
-                                    <field name="due_date" widget="date"/>
-                                    <field name="is_completed" invisible="1"/>
-                                </list>
-                                <form>
-                                    <group>
-                                        <field name="name"/>
-                                        <field name="description" widget="textarea"/>
-                                        <field name="stage_id" options="{'no_create': True}"/>
-                                        <field name="assigned_to"/>
-                                        <field name="due_date"/>
-                                        <field name="parent_task_id" 
-                                               domain="[('project_id', '=', project_id)]"
-                                               context="{'default_project_id': project_id}"/>
-                                    </group>
-                                </form>
-                            </field>
-                        </page>
-                        
-                        <page string="Lock Information">
-                            <group>
-                                <field name="is_locked" string="Is Locked"/>
-                                <field name="create_uid" string="Created By"/>
-                                <field name="create_date" string="Created On"/>
-                                <field name="write_uid" string="Last Updated By"/>
-                                <field name="write_date" string="Last Updated On"/>
-                            </group>
-                        </page>
-                    </notebook>
-                </sheet>
-                
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
-            </form>
-        </field>
-    </record>
-
-    <!-- ======================== Search View ======================== -->
-    <record id="pro_project_search" model="ir.ui.view">
-        <field name="name">pro.project.search</field>
-        <field name="model">pro.project</field>
-        <field name="arch" type="xml">
-            <search>
-                <!-- Quick search fields -->
-                <field name="name" string="Project" 
-                       filter_domain="['|', '|', ('name', 'ilike', self), ('description', 'ilike', self), ('customer_id.name', 'ilike', self)]"/>
-                <field name="customer_id" string="Customer"/>
-                <field name="create_uid" string="Created By"/>
-                <field name="state" string="Status"/>
-                
-                <!-- Filters -->
-                <filter name="filter_my_projects" string="My Projects" 
-                        domain="[('create_uid', '=', uid)]"/>
-                <filter name="filter_draft" string="Draft" 
-                        domain="[('state', '=', 'draft')]"/>
-                <filter name="filter_in_progress" string="In Progress" 
-                        domain="[('state', '=', 'in_progress')]"/>
-                <filter name="filter_completed" string="Completed" 
-                        domain="[('state', '=', 'completed')]"/>
-                <filter name="filter_locked" string="Locked" 
-                        domain="[('is_locked', '=', True)]"/>
-                <filter name="filter_unlocked" string="Unlocked" 
-                        domain="[('is_locked', '=', False)]"/>
-                
-                <separator/>
-                
-                <!-- Group By options -->
-                <group expand="0" string="Group By">
-                    <filter name="group_state" string="Status" 
-                            context="{'group_by': 'state'}"/>
-                    <filter name="group_customer" string="Customer" 
-                            context="{'group_by': 'customer_id'}"/>
-                    <filter name="group_create_uid" string="Created By" 
-                            context="{'group_by': 'create_uid'}"/>
-                    <filter name="group_locked" string="Locked Status" 
-                            context="{'group_by': 'is_locked'}"/>
-                    <separator/>
-                    <filter name="group_start_date" string="Start Date" 
-                            context="{'group_by': 'start_date:month'}"/>
-                    <filter name="group_end_date" string="End Date" 
-                            context="{'group_by': 'end_date:month'}"/>
+                </button>
+            </xpath>
+            
+            <!-- Add customer field after partner_id -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="customer_id" string="Customer" 
+                       placeholder="Select customer"
+                       options="{'no_create_edit': True}"
+                       domain="[('is_company', '=', True)]"/>
+            </xpath>
+            
+            <!-- Add status fields -->
+            <xpath expr="//notebook/page[@name='settings']//group" position="after">
+                <group string="Project Status" name="project_status" colspan="2">
+                    <field name="task_progress" string="Progress" widget="progressbar"/>
                 </group>
-                
-                <!-- Favorites -->
-                <separator/>
-                <filter name="favorites" string="My Projects" 
-                 domain="[('create_uid', '=', uid)]"/>
-            </search>
+            </xpath>
+
         </field>
     </record>
 
-    <!-- ======================== Kanban View ======================== -->
-    <record id="pro_project_kanban" model="ir.ui.view">
-        <field name="name">pro.project.kanban</field>
-        <field name="model">pro.project</field>
+    <!-- List/Tree View - Inherit and modify -->
+    <record id="project_project_view_tree_inherit" model="ir.ui.view">
+        <field name="name">project.project.tree.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_mobile" default_group_by="state">
-                <field name="name"/>
+            
+            <xpath expr="//list" position="attributes">
+                <attribute name="multi_edit">1</attribute>
+                <attribute name="sample">1</attribute>
+            </xpath>
+            
+            <xpath expr="//list/field[@name='name']" position="after">
+                <field name="customer_id" string="Customer" optional="show"/>
+                <field name="task_progress" string="Progress" widget="progressbar" optional="show"/>
+            </xpath>
+            
+            <xpath expr="//list/field[@name='partner_id']" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+            
+            <xpath expr="//list/field[@name='date_start']" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+            
+            <xpath expr="//list/field[@name='date']" position="attributes">
+                <attribute name="string">End Date</attribute>
+                <attribute name="optional">show</attribute>
+            </xpath>
+            
+        </field>
+    </record>
+
+    <!-- Search View - Inherit and modify -->
+    <record id="project_project_view_search_inherit" model="ir.ui.view">
+        <field name="name">project.project.search.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_filter"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//search/field[@name='name']" position="after">
                 <field name="customer_id"/>
-                <field name="description"/>
-                <field name="state"/>
-                <field name="is_locked"/>
+            </xpath>
+            
+            <xpath expr="//filter[@name='my_projects']" position="after">
+                <separator/>
+                <filter string="Creation Date" name="filter_create_date" date="create_date"/>
+                <filter string="Start Date" name="filter_date_start" date="date_start"/>
+                <filter string="End Date" name="filter_date_end" date="date"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </xpath>
+            
+            <xpath expr="//group[@expand='0']" position="inside">
+                <filter string='Customer' name="group_customer" context="{'group_by': 'customer_id'}"/>
+                <filter string="Creation Date" name="group_create_date" context="{'group_by': 'create_date'}"/>
+                <filter string="Start Date" name="group_date_start" context="{'group_by': 'date_start'}"/>
+                <filter string="End Date" name="group_date_end" context="{'group_by': 'date'}"/>
+            </xpath>
+            
+        </field>
+    </record>
+
+    <!-- Kanban View - Inherit and modify -->
+    <record id="project_project_view_kanban_inherit" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.project_view_kanban"/>
+        <field name="arch" type="xml">
+            
+            <!-- Add fields to kanban -->
+            <xpath expr="//kanban" position="inside">
+                <field name="customer_id"/>
                 <field name="task_progress"/>
+                <field name="date"/>
                 <field name="color"/>
-                <templates>
-                    <t t-name="card">
-                        <div t-attf-class="oe_kanban_card oe_kanban_global_click {{ record.is_locked.raw_value and 'bg-200' or '' }}"
-                             t-att-style="record.color.raw_value and 'background-color: var(--o-colors-%s);' % (record.color.raw_value) or ''">
-                            
-                            <div class="o_dropdown_kanban dropdown">
-                                <a class="dropdown-toggle o-no-caret" role="button" data-toggle="dropdown" href="#">
-                                    <i class="fa fa-ellipsis-v"/>
-                                </a>
-                                <ul class="dropdown-menu" role="menu">
-                                    <t t-if="!record.is_locked.raw_value">
-                                        <li><a type="edit">Edit</a></li>
-                                        <li><a type="delete">Delete</a></li>
-                                    </t>
-                                    <t t-else="">
-                                        <li class="text-muted"><i>Locked - Cannot edit</i></li>
-                                    </t>
-                                </ul>
+            </xpath>
+            
+            <!-- Replace card template -->
+            <xpath expr="//t[@t-name='card']" position="replace">
+                <t t-name="kanban-box">
+                    <div t_att_data-id="record.id.raw_value" class="oe_kanban_global_click">
+                        <div class="o_kanban_record_top mb-2">
+                            <div class="o_kanban_record_header">
+                                <strong class="o_kanban_record_title">
+                                    <t t-esc="record.name.value"/>
+                                </strong>
                             </div>
-                            
-                            <div class="o_kanban_card_header">
-                                <div class="o_kanban_card_header_title">
-                                    <div class="o_kanban_record_title">
-                                        <field name="name"/>
-                                    </div>
-                                </div>
-                                <div class="o_kanban_card_header_right">
-                                    <t t-if="record.is_locked.raw_value">
-                                        <span class="badge badge-danger" title="Locked">
-                                            <i class="fa fa-lock"/> Locked
-                                        </span>
-                                    </t>
-                                    <field name="state" widget="badge"/>
-                                </div>
+                            <div t-if="record.customer_id.raw_value" class="text-muted">
+                                <i class="fa fa-building-o"/> 
+                                <t t-esc="record.customer_id.value"/>
                             </div>
-                            
-                            <div class="o_kanban_card_content">
-                                <div t-if="record.customer_id.raw_value" class="o_kanban_record_subtitle">
-                                    <i class="fa fa-building-o"/> <field name="customer_id"/>
-                                </div>
-                                <div t-if="record.description.raw_value" class="text-muted small">
-                                    <field name="description"/>
-                                </div>
-                                <div class="mt-2">
-                                    <span class="small">Progress:</span>
-                                    <div class="progress" style="height: 5px;">
-                                        <div t-attf-class="progress-bar {{ record.is_locked.raw_value and 'bg-secondary' or 'bg-primary' }}"
-                                             t-att-style="'width: %s%%;' % (record.task_progress.raw_value or 0)"
-                                             role="progressbar"
-                                             t-att-aria-valuenow="record.task_progress.raw_value or 0"
-                                             aria-valuemin="0"
-                                             aria-valuemax="100"/>
-                                    </div>
+                            <div t-if="record.user_id.raw_value" class="text-muted small">
+                                <i class="fa fa-user"/> 
+                                <t t-esc="record.user_id.value"/>
+                            </div>
+                        </div>
+                        
+                        <div class="o_kanban_record_content">
+                            <div class="mt-2">
+                                <span class="small">Progress:</span>
+                                <div class="progress" style="height: 5px;">
+                                    <div t-att-class="'progress-bar ' + (record.task_progress.raw_value ? 'bg-secondary' : 'bg-primary')"
+                                        t-att-style="'width: %s%%;' % (record.task_progress.raw_value or 0)"
+                                        role="progressbar"
+                                        t-att-aria-valuenow="record.task_progress.raw_value or 0"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"/>
                                 </div>
                             </div>
                         </div>
-                    </t>
-                </templates>
-            </kanban>
+                        
+                        <div class="o_kanban_record_bottom mt-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    End: <t t-esc="record.date.value"/>
+                                </small>
+                            </div>
+                            <field name="activity_ids" widget="kanban_activity"/>
+                        </div>
+                    </div>
+                </t>
+            </xpath>
+            
         </field>
     </record>
 
-    <!-- ======================== Calendar View ======================== -->
-    <record id="pro_project_calendar" model="ir.ui.view">
-        <field name="name">pro.project.calendar</field>
-        <field name="model">pro.project</field>
+    <!-- Activity View - Inherit and modify -->
+    <record id="project_project_view_activity" model="ir.ui.view">
+        <field name="name">project.project.activity</field>
+        <field name="model">project.project</field>
         <field name="arch" type="xml">
-            <calendar date_start="start_date" date_stop="end_date">
+            <activity string="Projects">
                 <field name="name"/>
                 <field name="customer_id"/>
-                <field name="state"/>
-            </calendar>
+                <templates>
+                    <div t-name="activity-box">
+                        <div class="ms-2">
+                            <div>
+                                <strong><t t-esc="record.name.value"/></strong>
+                            </div>
+                            <div t-if="record.customer_id" class="text-muted small">
+                                <t t-esc="record.customer_id.display_value"/>
+                            </div>
+                            <div class="text-muted">
+                                End Date: <t t-esc="record.date.value"/>
+                            </div>
+                        </div>
+                    </div>
+                </templates>
+            </activity>
         </field>
     </record>
 
-    <!-- ======================== Graph View ======================== -->
-    <record id="pro_project_graph" model="ir.ui.view">
-        <field name="name">pro.project.graph</field>
-        <field name="model">pro.project</field>
+    <!-- Calendar View - Inherit and modify -->
+    <record id="project_project_view_calendar_inherit" model="ir.ui.view">
+        <field name="name">project.project.calendar.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_calendar"/>
         <field name="arch" type="xml">
-            <graph string="Project Analysis" type="bar" sample="1">
-                <field name="state" type="row"/>
-                <field name="customer_id" type="row"/>
-                <field name="create_uid" type="row"/>
-            </graph>
+            
+            <xpath expr="//calendar" position="inside">
+                <field name="customer_id" invisible="1"/>
+            </xpath>
+            
         </field>
     </record>
 
-    <!-- ======================== Pivot View ======================== -->
-    <record id="pro_project_pivot" model="ir.ui.view">
-        <field name="name">pro.project.pivot</field>
-        <field name="model">pro.project</field>
-        <field name="arch" type="xml">
-            <pivot string="Project Analysis" disable_linking="true" display_quantity="1">
-                <field name="state" type="row"/>
-                <field name="customer_id" type="row"/>
-                <field name="create_uid" type="col"/>
-                <field name="is_locked" type="col"/>
-                <field name="task_progress" type="measure" widget="percentage"/>
-            </pivot>
-        </field>
-    </record>
-
-    <!-- ======================== Action ======================== -->
-    <record id="pro_project_action" model="ir.actions.act_window">
+    <!-- Main Action - Custom ID to avoid overriding core -->
+    <record id="action_project_all_custom" model="ir.actions.act_window">
         <field name="name">Projects</field>
-        <field name="res_model">pro.project</field>
-        <field name="view_mode">kanban,list,form,calendar,graph,pivot</field>
-        <field name="search_view_id" ref="pro_project_search"/>
-        <field name="context">{'search_default_filter_my_projects': True}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first project!
-            </p>
-            <p>
-                Projects help you organize your work, track deadlines, and collaborate with team members and customers.
-                Only the creator and administrators can modify or delete locked projects.
-            </p>
-        </field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">kanban,list,form,calendar,activity</field>
+        <field name="context">{
+            'search_default_my_projects': 1,
+            'search_default_filter_open': 1,
+        }</field>
     </record>
 
-    <!-- ======================== Menu Items ======================== -->
-    <menuitem id="projects_menu_root" 
+    <!-- Menu Items - Custom IDs to avoid conflicts -->
+    <!-- <menuitem id="menu_project_main_custom" 
               name="Projects" 
               sequence="10"
               web_icon="project,static/description/icon.png"/>
     
-    <menuitem id="projects_menu"
+    <menuitem id="menu_all_projects_custom"
               name="All Projects"
-              parent="projects_menu_root"
-              action="pro_project_action"
-              sequence="10"/>
+              parent="menu_project_main_custom"
+              action="action_project_all_custom"
+              sequence="10"
+              groups="project.group_project_manager"/> -->
 
-    <!-- ======================== Server Actions ======================== -->
-    <record id="action_lock_project" model="ir.actions.server">
-        <field name="name">Lock Project</field>
-        <field name="model_id" ref="model_pro_project"/>
-        <field name="binding_model_id" ref="model_pro_project"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">
-            for record in records:
-                if not record.is_locked:
-                    record.write({'is_locked': True})
+    <!-- ======================== Extend Task Views ======================== -->
+    
+    <!-- Task Form View -->
+    <record id="project_task_view_form_inherit" model="ir.ui.view">
+        <field name="name">project.task.form.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+    </record>
+
+    <!-- Task Search View -->
+    <record id="project_task_view_search_inherit" model="ir.ui.view">
+        <field name="name">project.task.search.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+    </record>
+
+    <!-- Task List View - Inherit and modify -->
+    <record id="project_task_view_tree_inherit" model="ir.ui.view">
+        <field name="name">project.task.list.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//list" position="attributes">
+                <attribute name="multi_edit">1</attribute>
+            </xpath>
+            
         </field>
     </record>
 
-    <record id="action_unlock_project" model="ir.actions.server">
-        <field name="name">Unlock Project</field>
-        <field name="model_id" ref="model_pro_project"/>
-        <field name="binding_model_id" ref="model_pro_project"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">
-            for record in records:
-                if record.is_locked:
-                    # Check if current user is creator or admin
-                    if self.env.user == record.create_uid or self.env.is_superuser():
-                        record.write({'is_locked': False})
-                    else:
-                        raise UserError("Only the creator or administrator can unlock this project.")
-        </field>
-    </record>
+    <!-- Server Actions -->
 
+    <record id="action_mark_completed" model="ir.actions.server">
+        <field name="name">Mark as Completed</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="binding_model_id" ref="project.model_project_task"/>
+        <field name="binding_view_types">list,form,kanban</field>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Call the dedicated method instead of direct write
+records.action_approve_done()
+]]></field>
+    </record>
 </odoo>

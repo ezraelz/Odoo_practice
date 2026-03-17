@@ -1,595 +1,286 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    
+
     <!-- ======================== List View ======================== -->
-    <record id="pro_task_list" model="ir.ui.view">
-        <field name="name">pro.task.list</field>
-        <field name="model">pro.task</field>
-        <field name="type">list</field>
+    <record id="view_task_list_refined" model="ir.ui.view">
+        <field name="name">project.task.list.refined</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2"/>
         <field name="arch" type="xml">
-            <list 
-                decoration-success="is_completed == True" 
-                decoration-danger="due_date &lt; current_date and not is_completed"
-                decoration-warning="due_date == current_date and not is_completed"
-                default_order="sequence, due_date"
-                multi_edit="1"
-                editable="bottom">
-                <field name="sequence" widget="handle" optional="show"/>
-                <field name="name" string="Task" optional="show"/>
-                <field name="project_id" string="Project" optional="show"/>
-                <field name="assigned_to" string="Assigned To" optional="show"/>
-                <field name="stage_id" string="Stage" widget="badge" optional="show"/>
-                <field name="due_date" string="Due Date" optional="show"/>
-                <field name="is_completed" string="Completed" invisible="1"/>
-                <field name="create_uid" string="Created By" optional="hide"/>
-                <field name="create_date" string="Created On" optional="hide"/>
-                <field name="write_uid" string="Last Updated By" optional="hide"/>
-            </list>
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-success">stage_id.is_done</attribute>
+                <attribute name="decoration-danger">
+                    date_deadline &lt; current_date and not stage_id.is_done
+                </attribute>
+                <attribute name="default_order">sequence, date_deadline</attribute>
+            </xpath>
+
+            <xpath expr="//list/field[@name='name']" position="after">
+                <field name="project_id"/>
+                <field name="user_ids" widget="many2many_avatar_user"/>
+                <field name="stage_id" widget="badge" readonly="1"
+                    domain="[('project_ids','in',[project_id])]"/>
+                <field name="date_deadline"/>
+            </xpath>
+
+            <xpath expr="//list/field[@name='stage_id']" position="after">
+                <field name="progress" widget="progressbar" groups="project.group_project_manager,base.group_system"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ======================== Form View ======================== -->
+    <record id="view_task_form_refined" model="ir.ui.view">
+        <field name="name">project.task.form.refined</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+
+            <!-- Ribbons -->
+            <xpath expr="//sheet" position="inside">
+                <widget name="web_ribbon"
+                        title="Completed"
+                        bg_color="bg-info"
+                        invisible="not stage_id.is_completed"/>
+
+                <widget name="web_ribbon"
+                        title="Done"
+                        bg_color="bg-success"
+                        invisible="not stage_id.is_done"/>
+            </xpath>
+
+            <!-- Fields -->
+            <xpath expr="//sheet/group[1]" position="inside">
+                <field name="user_ids"
+                       widget="many2many_avatar_user"
+                       options="{'no_create': True}"/>
+                <field name="description_admin" groups="project.group_project_manager,base.group_system"/>
+                <field name="progress" widget="progressbar" groups="project.group_project_manager,base.group_system"/>
+            </xpath>
+
+            <!-- Assigner-only approval button -->
+            <xpath expr="//header" position="inside">
+                <button name="action_approve_done"
+                        type="object"
+                        string="Approve &amp; Move to Done"
+                        class="btn-primary"
+                        invisible="
+                            not stage_id.is_completed
+                            or create_uid != uid
+                        "/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ======================== Kanban View ======================== -->
+    <record id="view_task_kanban_refined" model="ir.ui.view">
+        <field name="name">project.task.kanban.refined</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_kanban"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//kanban" position="inside">
+                <field name="project_id"/>
+                <field name="stage_id" widget="badge"
+                     domain="[('project_ids','in',[project_id])]"/>
+            </xpath>
+
+            <xpath expr="//templates/t[@t-name='card']" position="inside">
+                <div>
+                    <field name="progress" widget="progressbar"/>
+                </div>
+            </xpath>
+
+            <xpath expr="//templates/t[@t-name='card']" position="inside">
+                <t t-if="record.stage_id.value and record.stage_id.value.is_completed">
+                    <span class="badge bg-info">Completed</span>
+                </t>
+                <t t-if="record.stage_id.value and record.stage_id.value.is_done">
+                    <span class="badge bg-success">Done</span>
+                </t>
+            </xpath>
+
         </field>
     </record>
 
     <!-- ======================== Action ======================== -->
-    <record id="pro_task_action" model="ir.actions.act_window">
-        <field name="name">Tasks</field>
-        <field name="res_model">pro.task</field>
-        <field name="view_mode">kanban,list,form,calendar,graph,pivot,activity</field>
-        <field name="search_view_id" ref="pro_task_search"/>
-        <field name="context">{'search_default_filter_my_tasks': 1, 'default_project_id': context.get('active_id')}</field>        
+    <record id="action_my_tasks" model="ir.actions.act_window">
+        <field name="name">My Tasks</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">kanban,list,form,calendar,activity</field>
+        <field name="domain">[('user_ids','in',[uid])]</field>
+        <field name="search_view_id" ref="project.view_task_search_form"/>
+        <field name="context">
+            {'search_default_filter_my_tasks': 1}
+        </field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first task!
             </p>
             <p>
-                Tasks help you break down projects into manageable pieces. 
-                You can assign tasks to team members, set due dates, and track progress through different stages.
-                Tasks cannot be modified when their parent project is locked.
+                Tasks help you break down projects into manageable pieces.
+            </p>
+        </field>
+    </record>
+    <record id="action_all_tasks" model="ir.actions.act_window">
+        <field name="name">All Tasks</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">kanban,list,form,calendar,activity</field>
+        <field name="search_view_id" ref="project.view_task_search_form"/>
+        <field name="domain">['|', ('user_ids','in',[uid]), ('id','=',0)]</field>
+        <field name="context">{'show_all_if_admin': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first task!
+            </p>
+            <p>
+                Tasks help you break down projects into manageable pieces.
             </p>
         </field>
     </record>
 
-    <!-- ======================== Form View ======================== -->
-    <record id="pro_task_form" model="ir.ui.view">
-        <field name="name">pro.task.form</field>
-        <field name="model">pro.task</field>
-        <field name="type">form</field>
+    <!-- ======================== Refine Search View ======================== -->
+    <record id="view_task_search_inherit_refined" model="ir.ui.view">
+        <field name="name">project.task.search.refined</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
         <field name="arch" type="xml">
-            <form>
-                <header>
-                    <field name="stage_id" 
-                           widget="statusbar" 
-                           statusbar_visible="pro_task_stage_new,pro_task_stage_in_progress,pro_task_stage_review,pro_task_stage_done" 
-                           options="{'fold_field': 'fold'}"
-                           readonly="project_id.is_locked"/>
-                    
-                    <button name="action_mark_completed" 
-                            string="Mark as Completed" 
-                            type="object"
-                            class="btn-success"
-                            invisible="is_completed == True"
-                            readonly="project_id.is_locked"/>
-                    
-                    <button name="action_assign_to_me" 
-                            string="Assign to Me" 
-                            type="object"
-                            class="btn-primary"
-                            invisible="assigned_to == uid"
-                            readonly="project_id.is_locked"/>
-                </header>
-                
-                <sheet>
-                    <!-- Project locked ribbon -->
-                    <div class="ribbon" name="project_lock_ribbon" 
-                         invisible="not project_id.is_locked">
-                        <span class="bg-danger">
-                            <i class="fa fa-lock"/> Project Locked
-                        </span>
-                    </div>
-                    
-                    <field name="project_id" invisible="1"/>
-                    <field name="is_completed" invisible="1"/>
-                    
-                    <!-- Completed ribbon - Odoo 18+ compatible -->
-                    <widget name="web_ribbon" 
-                            title="Completed" 
-                            bg_color="bg-success" 
-                            invisible="not is_completed"/>
-                    
-                    <div class="oe_title">
-                        <label for="name" string="Task Name"/>
-                        <h1>
-                            <field name="name" 
-                                   placeholder="e.g. Design homepage..." 
-                                   readonly="project_id.is_locked"
-                                   required="1"/>
-                        </h1>
-                    </div>
-                    
-                    <group>
-                        <group string="Task Information">
-                            <field name="project_id" 
-                                   string="Project" 
-                                   widget="many2one" 
-                                   options="{'no_create': True, 'no_create_edit': True}"
-                                   readonly="project_id.is_locked"
-                                   required="1"
-                                   context="{'default_is_locked': False}"/>
-                            
-                            <field name="parent_task_id" 
-                                   string="Parent Task" 
-                                   widget="many2one"
-                                   domain="[('project_id', '=', project_id)]"
-                                   context="{'default_project_id': project_id}"
-                                   options="{'no_create': True, 'no_create_edit': True}"
-                                   readonly="project_id.is_locked"/>
-                            
-                            <field name="stage_id" 
-                                   string="Stage" 
-                                   widget="many2one"
-                                   options="{'no_create': True}"
-                                   readonly="project_id.is_locked"
-                                   required="1"/>
-                            
-                            <field name="assigned_to" 
-                                   string="Assigned To" 
-                                   widget="many2one"
-                                   options="{'no_create': True}"
-                                   readonly="project_id.is_locked"/>
-                            
-                            <field name="sequence" 
-                                   string="Sequence" 
-                                   readonly="project_id.is_locked"/>
-                        </group>
-                        
-                        <group string="Timeline">
-                            <field name="due_date" 
-                                   string="Due Date" 
-                                   widget="date"
-                                   readonly="project_id.is_locked"/>
-                            
-                            <field name="create_date" 
-                                   string="Created On" 
-                                   readonly="1"/>
-                            
-                            <field name="write_date" 
-                                   string="Last Updated" 
-                                   readonly="1"/>
-                        </group>
-                    </group>
-                    
-                    <notebook>
-                        <page string="Description" name="description">
-                            <field name="description" 
-                                   string="Description" 
-                                   placeholder="Add detailed task description..."
-                                   readonly="project_id.is_locked"/>
-                        </page>
-                        
-                        <page string="Subtasks" name="subtasks">
-                            <field name="child_task_ids" 
-                                   readonly="project_id.is_locked"
-                                   context="{'default_project_id': project_id, 'default_parent_task_id': id}"
-                                   mode="list,form">
-                                <list editable="bottom" 
-                                      decoration-success="is_completed"
-                                      multi_edit="1"
-                                      default_order="sequence">
-                                    <field name="sequence" widget="handle" optional="hide"/>
-                                    <field name="name"/>
-                                    <field name="stage_id" widget="badge"/>
-                                    <field name="assigned_to"/>
-                                    <field name="due_date"/>
-                                    <field name="is_completed" invisible="1"/>
-                                </list>
-                                <form>
-                                    <group>
-                                        <field name="name"/>
-                                        <field name="stage_id"/>
-                                        <field name="assigned_to"/>
-                                        <field name="due_date"/>
-                                    </group>
-                                </form>
-                            </field>
-                        </page>
-                        
-                        <page string="System Information" groups="base.group_no_one">
-                            <group>
-                                <field name="create_uid" string="Created By"/>
-                                <field name="create_date" string="Created On"/>
-                                <field name="write_uid" string="Last Updated By"/>
-                                <field name="write_date" string="Last Updated On"/>
-                            </group>
-                        </page>
-                    </notebook>
-                </sheet>
-                
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
-            </form>
+            <xpath expr="//filter[@name='my_tasks']" position="attributes">
+                <attribute name="domain">[('user_ids','in',[uid])]</attribute>
+                <attribute name="string">My Tasks</attribute>
+            </xpath>
         </field>
     </record>
 
-    <!-- ======================== Search View ======================== -->
-    <record id="pro_task_search" model="ir.ui.view">
-        <field name="name">pro.task.search</field>
-        <field name="model">pro.task</field>
-        <field name="type">search</field>
+    <!-- ======================== Refine Calendar View ======================== -->
+    <record id="view_task_calendar_inherit_refined" model="ir.ui.view">
+        <field name="name">project.task.calendar.refined</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_calendar"/>
         <field name="arch" type="xml">
-            <search>
-                <!-- Quick search fields -->
-                <field name="name" 
-                       string="Task" 
-                       filter_domain="['|', '|', ('name', 'ilike', self), ('description', 'ilike', self), ('project_id.name', 'ilike', self)]"/>
-                
-                <field name="project_id" 
-                       string="Project"/>
-                
-                <field name="assigned_to" 
-                       string="Assigned To"/>
-                
-                <field name="stage_id" 
-                       string="Stage"/>
-                
-                <!-- Filters -->
-                <filter name="filter_my_tasks" 
-                        string="My Tasks" 
-                        domain="[('assigned_to', '=', uid)]"/>
-                
-                <filter name="filter_unassigned" 
-                        string="Unassigned" 
-                        domain="[('assigned_to', '=', False)]"/>
-                
-                <filter name="filter_overdue" 
-                        string="Overdue" 
-                        domain="[('due_date', '&lt;', current_date), ('is_completed', '=', False)]"/>
-                
-                <filter name="filter_due_today" 
-                        string="Due Today" 
-                        domain="[('due_date', '=', current_date)]"/>
-                
-                <filter name="filter_due_this_week" 
-                        string="Due This Week" 
-                        domain="[('due_date', '>=', context_today().strftime('%Y-%m-%d')), ('due_date', '&lt;=', (context_today() + relativedelta(days=7)).strftime('%Y-%m-%d'))]"/>
-                
-                <filter name="filter_completed" 
-                        string="Completed" 
-                        domain="[('is_completed', '=', True)]"/>
-                
-                <filter name="filter_incomplete" 
-                        string="Incomplete" 
-                        domain="[('is_completed', '=', False)]"/>
-                
-                <filter name="filter_locked_projects" 
-                        string="In Locked Projects" 
-                        domain="[('project_id.is_locked', '=', True)]"/>
-                
-                <separator/>
-                
-                <!-- Group By options -->
-                <group expand="0" string="Group By">
-                    <filter name="group_project" 
-                            string="Project" 
-                            context="{'group_by': 'project_id'}"/>
-                    
-                    <filter name="group_stage" 
-                            string="Stage" 
-                            context="{'group_by': 'stage_id'}"/>
-                    
-                    <filter name="group_assigned" 
-                            string="Assigned To" 
-                            context="{'group_by': 'assigned_to'}"/>
-                    
-                    <filter name="group_parent_task" 
-                            string="Parent Task" 
-                            context="{'group_by': 'parent_task_id'}"/>
-                    
-                    <separator/>
-                    
-                    <filter name="group_due_date" 
-                            string="Due Date" 
-                            context="{'group_by': 'due_date:week'}"/>
-                    
-                    <filter name="group_create_date" 
-                            string="Creation Date" 
-                            context="{'group_by': 'create_date:month'}"/>
-                </group>
-                
-                <!-- Favorites 
-                <separator/>
-                <filter name="favorites" 
-                        string="Favorites" 
-                        domain="[('message_has_attachment', '=', True)]"/>
-                -->
-            </search>
+            <xpath expr="//calendar" position="attributes">
+                <attribute name="color">project_id</attribute>
+                <attribute name="string">Task Calendar</attribute>
+            </xpath>
         </field>
     </record>
 
-    <!-- ======================== Kanban View ======================== -->
-    <record id="pro_task_kanban" model="ir.ui.view">
-        <field name="name">pro.task.kanban</field>
-        <field name="model">pro.task</field>
-        <field name="type">kanban</field>
+    <!-- ======================== Refine Graph View ======================== -->
+    <record id="view_task_graph_inherit_refined" model="ir.ui.view">
+        <field name="name">project.task.graph.refined</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_project_task_graph"/>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_mobile" 
-                    default_group_by="stage_id"
-                    records_draggable="True"
-                    group_create="True">
-                <field name="name"/>
-                <field name="project_id"/>
-                <field name="stage_id"/>
-                <field name="assigned_to"/>
-                <field name="project_locked"/>
-                <field name="due_date"/>
-                <field name="description"/>
-                <field name="is_completed"/>
-                <field name="parent_task_id"/>
-                <field name="color"/>
-                <field name="sequence"/>
-                
-                <templates>
-                    <t t-name="card">
-                        <div t-att-class="'oe_kanban_card oe_kanban_global_click' + (record.project_locked.raw_value ? ' o_kanban_locked' : '')">
-                            
-                            <!-- Dropdown menu -->
-                            <div class="o_dropdown_kanban dropdown">
-                                <a class="dropdown-toggle o-no-caret" 
-                                role="button" 
-                                data-toggle="dropdown" 
-                                href="#"
-                                aria-label="Actions">
-                                    <i class="fa fa-ellipsis-v"/>
-                                </a>
-                                <ul class="dropdown-menu" role="menu">
-                                    <t t-if="!record.project_locked.raw_value">
-                                        <li><a type="edit">Edit</a></li>
-                                        <li><a type="delete">Delete</a></li>
-                                        <li role="separator" class="divider"/>
-                                        <li><a name="action_assign_to_me" type="object">Assign to Me</a></li>
-                                        <li><a name="action_mark_completed" type="object">Mark Completed</a></li>
-                                    </t>
-                                    <t t-else="">
-                                        <li class="text-muted p-2"><i class="fa fa-lock"/> Project Locked</li>
-                                    </t>
-                                </ul>
-                            </div>
-                            
-                            <div class="o_kanban_card_header">
-                                <div class="o_kanban_card_header_title">
-                                    <div class="o_kanban_record_title">
-                                        <field name="name"/>
-                                    </div>
-                                </div>
-                                <div class="o_kanban_card_header_right">
-                                    <t t-if="record.project_locked.raw_value">
-                                        <span class="badge badge-danger" title="Project Locked">
-                                            <i class="fa fa-lock"/>
-                                        </span>
-                                    </t>
-                                    <t t-if="record.project_locked.raw_value">
-                                        <span class="badge badge-info" title="Subtask">
-                                            <i class="fa fa-level-down"/> Subtask
-                                        </span>
-                                    </t>
-                                </div>
-                            </div>
-                            
-                            <div class="o_kanban_card_content">
-                                <!-- Project info -->
-                                <div class="o_kanban_record_subtitle">
-                                    <i class="fa fa-folder-open-o"/> 
-                                    <field name="project_id"/>
-                                </div>
-                                
-                                <!-- Description preview -->
-                                <div t-if="record.description.raw_value" class="text-muted small mb-2">
-                                    <t t-esc="record.description.value.split('\n')[0].substring(0,75)"/>...
-                                </div>
-                                
-                                <!-- Assignment and due date -->
-                                <div class="row">
-                                    <div class="col-7">
-                                        <i class="fa fa-user" t-att-class="!record.assigned_to.raw_value ? 'text-muted' : ''"/> 
-                                        <t t-if="record.assigned_to.raw_value">
-                                            <field name="assigned_to"/>
-                                        </t>
-                                        <t t-else="">
-                                            <span class="text-muted">Unassigned</span>
-                                        </t>
-                                    </div>
-                                    <div class="col-5 text-right">
-                                        <i class="fa fa-calendar"/>
-                                        <field name="due_date"/>
-                                    </div>
-                                </div>
-                                
-                                <!-- Stage badge -->
-                                <div class="mt-2">
-                                    <field name="stage_id" widget="badge"/>
-                                </div>
-                                
-                                <!-- Overdue indicator using decoration from list view logic -->
-                                <t t-if="record.due_date.raw_value and !record.is_completed.raw_value">
-                                    <div class="mt-2 text-warning">
-                                        <i class="fa fa-clock-o"/> Check due date
-                                    </div>
-                                </t>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
+            <xpath expr="//graph" position="attributes">
+                <attribute name="string">Task Analysis</attribute>
+                <attribute name="type">bar</attribute>
+                <attribute name="stacked">True</attribute>
+            </xpath>
+            <!--
+            <xpath expr="//graph/field[@name='id']" position="attributes">
+                <attribute name="string">Number of Tasks</attribute>
+            </xpath>
+            -->
         </field>
     </record>
-    <!-- ======================== Calendar View ======================== -->
-    <record id="pro_task_calendar" model="ir.ui.view">
-        <field name="name">pro.task.calendar</field>
-        <field name="model">pro.task</field>
+ 
+    <!-- ======================== Refine Pivot View ======================== -->
+    <record id="view_task_pivot_inherit_refined" model="ir.ui.view">
+        <field name="name">project.task.pivot.refined</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_project_task_pivot"/>
         <field name="arch" type="xml">
-            <calendar 
-                date_start="due_date" 
-                color="project_id"
-                string="Task Calendar">
-                <field name="name"/>
-                <field name="project_id"/>
-                <field name="assigned_to"/>
-                <field name="stage_id"/>
-            </calendar>
-        </field>
-    </record>
-    <!-- ======================== Graph View ======================== -->
-    <record id="pro_task_graph" model="ir.ui.view">
-        <field name="name">pro.task.graph</field>
-        <field name="model">pro.task</field>
-        <field name="type">graph</field>
-        <field name="arch" type="xml">
-            <graph string="Task Analysis" 
-                   type="bar" 
-                   stacked="True"
-                   sample="1">
-                <field name="stage_id" type="row"/>
-                <field name="project_id" type="row"/>
-                <field name="assigned_to" type="row"/>
-                <field name="is_completed" type="col"/>
-                <field name="id" type="measure" string="Number of Tasks"/>
-            </graph>
-        </field>
-    </record>
-
-    <!-- ======================== Pivot View ======================== -->
-    <record id="pro_task_pivot" model="ir.ui.view">
-        <field name="name">pro.task.pivot</field>
-        <field name="model">pro.task</field>
-        <field name="type">pivot</field>
-        <field name="arch" type="xml">
-            <pivot string="Task Analysis" 
-                   disable_linking="true"
-                   display_quantity="1">
-                <field name="project_id" type="row"/>
-                <field name="stage_id" type="row"/>
-                <field name="assigned_to" type="row"/>
-                <field name="is_completed" type="col"/>
-                <field name="id" type="measure" string="Number of Tasks"/>
-                <!-- <field name="due_date:month" type="measure" string="Tasks per Month"/> -->
-            </pivot>
+            <xpath expr="//pivot" position="attributes">
+                <attribute name="string">Task Analysis</attribute>
+                <attribute name="disable_linking">True</attribute>
+                <attribute name="display_quantity">1</attribute>
+            </xpath>
+            <!--
+            <xpath expr="//pivot/field[@name='id']" position="attributes">
+                <attribute name="string">Number of Tasks</attribute>
+            </xpath>
+            -->
         </field>
     </record>
 
     <!-- ======================== Activity View ======================== -->
-    <record id="pro_task_activity" model="ir.ui.view">
-        <field name="name">pro.task.activity</field>
-        <field name="model">pro.task</field>
+    <record id="view_task_activity_refined" model="ir.ui.view">
+        <field name="name">project.task.activity.refined</field>
+        <field name="model">project.task</field>
         <field name="type">activity</field>
         <field name="arch" type="xml">
             <activity string="Task Activities">
                 <field name="name"/>
                 <field name="project_id"/>
-                <field name="assigned_to"/>
-                <field name="due_date"/>
-                <field name="stage_id"/>
-                <templates>
-                    <div t-name="activity-box">
-                        <strong><field name="name"/></strong>
-                        <div><field name="project_id"/></div>
-                        <div>Due: <field name="due_date"/></div>
-                    </div>
-                </templates>
+                <field name="user_ids"/>
+                <field name="date_deadline"/>
+                <field name="stage_id" readonly="1"/>
             </activity>
         </field>
     </record>
 
-    <!-- ======================== Menu Items ======================== -->
-    <menuitem id="tasks_menu"
-              name="Tasks"
-              parent="projects_menu_root"
-              action="pro_task_action"
-              sequence="20"
-              groups="group_project_user_own,group_project_user_all,group_project_admin"/>
-
     <!-- ======================== Task Stages ======================== -->
-    <record id="pro_task_stage_new" model="pro.task.stage">
-        <field name="name">New</field>
+    <record id="project_task_stage_new" model="project.task.type">
+        <field name="name">Backlog</field>
         <field name="sequence">10</field>
         <field name="fold">False</field>
         <field name="is_done">False</field>
     </record>
 
-    <record id="pro_task_stage_in_progress" model="pro.task.stage">
+    <record id="project_task_stage_in_progress" model="project.task.type">
         <field name="name">In Progress</field>
         <field name="sequence">20</field>
         <field name="fold">False</field>
         <field name="is_done">False</field>
     </record>
 
-    <record id="pro_task_stage_review" model="pro.task.stage">
-        <field name="name">Review</field>
+    <record id="project_task_stage_review" model="project.task.type">
+        <field name="name">On hold</field>
         <field name="sequence">30</field>
         <field name="fold">True</field>
         <field name="is_done">False</field>
     </record>
 
-    <record id="pro_task_stage_done" model="pro.task.stage">
-        <field name="name">Done</field>
+    <record id="project_task_completed" model="project.task.type">
+        <field name="name">Completed</field>
         <field name="sequence">40</field>
+        <field name="fold">True</field>
+        <field name="is_completed">True</field>
+        <field name="is_done">False</field>
+    </record>
+
+    <record id="project_task_stage_done" model="project.task.type">
+        <field name="name">Done</field>
+        <field name="sequence">50</field>
         <field name="fold">True</field>
         <field name="is_done">True</field>
     </record>
 
-    <!-- ======================== Server Actions ======================== -->
-    <record id="action_assign_to_me" model="ir.actions.server">
-        <field name="name">Assign to Me</field>
-        <field name="model_id" ref="model_pro_task"/>
-        <field name="binding_model_id" ref="model_pro_task"/>
-        <field name="binding_view_types">list,form,kanban</field>
-        <field name="state">code</field>
-        <field name="code">
-for record in records:
-    if not record.project_id.is_locked:
-        record.write({'assigned_to': self.env.uid})
-    else:
-        raise UserError("Cannot assign task: The project is locked.")
-        </field>
+    <record id="project_task_stage_done_final" model="project.task.type">
+        <field name="name">Done stage</field>
+        <field name="sequence">60</field>
+        <field name="fold">True</field>
+        <field name="is_done">True</field>
     </record>
-
-    <record id="action_mark_completed" model="ir.actions.server">
-        <field name="name">Mark as Completed</field>
-        <field name="model_id" ref="model_pro_task"/>
-        <field name="binding_model_id" ref="model_pro_task"/>
-        <field name="binding_view_types">list,form,kanban</field>
-        <field name="state">code</field>
-        <field name="code">
-done_stage = self.env['pro.task.stage'].search([('is_done', '=', True)], limit=1)
-if done_stage:
-    for record in records:
-        if not record.project_id.is_locked:
-            record.write({'stage_id': done_stage.id})
-        else:
-            raise UserError("Cannot complete task: The project is locked.")
-else:
-    raise UserError("No 'Completed' stage found. Please configure task stages first.")
-        </field>
-    </record>
-
+    
     <!-- ======================== Automated Actions ======================== -->
     <record id="automatic_action_notify_overdue" model="ir.actions.server">
         <field name="name">Notify Overdue Tasks</field>
-        <field name="model_id" ref="model_pro_task"/>
+        <field name="model_id" ref="model_project_task"/>
         <field name="state">code</field>
-        <field name="code">
-# This could be triggered by a scheduled action
+        <field name="code"><![CDATA[
 overdue_tasks = self.search([
-    ('due_date', '&lt;', fields.Date.today()),
-    ('is_completed', '=', False),
-    ('assigned_to', '!=', False)
+    ('date_deadline', '<', fields.Date.today()),
+    ('stage_id.is_done', '=', False),
+    ('user_ids', '!=', False)
 ])
 for task in overdue_tasks:
     task.message_post(
         body=f"Task {task.name} is overdue!",
-        partner_ids=task.assigned_to.partner_id.ids,
+        partner_ids=task.user_ids.partner_id.ids,
         message_type='notification'
     )
-        </field>
+]]></field>
     </record>
-
 </odoo>
