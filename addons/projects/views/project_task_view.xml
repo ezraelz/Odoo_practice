@@ -54,8 +54,10 @@
                 <field name="user_ids"
                        widget="many2many_avatar_user"
                        options="{'no_create': True}"/>
-                <field name="description_admin" groups="project.group_project_manager,base.group_system"/>
-                <field name="progress" widget="progressbar" groups="project.group_project_manager,base.group_system"/>
+                <field name="description"/>
+                <field name="stage_id" options="{'no_create': True}"/>
+                <field name="stage_weight" groups="project.group_project_manager,base.group_system"/>
+                <field name="progress" widget="progressbar" readonly="1"/>
             </xpath>
 
             <!-- Assigner-only approval button -->

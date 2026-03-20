@@ -15,7 +15,7 @@ services:
     depends_on:
       - db
     ports:
-      - "8069:8069"
+      - "9080:8069"
     env_file:
       - .env
     environment:

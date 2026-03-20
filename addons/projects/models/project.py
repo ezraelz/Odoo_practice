@@ -24,6 +24,12 @@ class ProjectTaskType(models.Model):
         string='Projects'
     )
 
+    weight = fields.Integer(
+        string='Weight',
+        help='Custom field to determine stage order and progression logic.',
+        default=10,
+    )
+
     @api.constrains('is_completed', 'is_done')
     def _check_stage_flags(self):
         for stage in self:
@@ -69,11 +75,11 @@ class Project(models.Model):
 
         # Define stages with flags
         default_stages = [
-            {'name': 'Backlog', 'sequence': 10, 'fold': False, 'is_completed': False, 'is_done': False},
-            {'name': 'In Progress', 'sequence': 20, 'fold': False, 'is_completed': False, 'is_done': False},
-            {'name': 'On Hold', 'sequence': 30, 'fold': True, 'is_completed': False, 'is_done': False},
-            {'name': 'Completed', 'sequence': 40, 'fold': True, 'is_completed': True, 'is_done': False},
-            {'name': 'Done', 'sequence': 50, 'fold': True, 'is_completed': False, 'is_done': True},
+            {'name': 'Backlog', 'sequence': 10, 'fold': False, 'is_completed': False, 'is_done': False, 'weight': 10},
+            {'name': 'In Progress', 'sequence': 20, 'fold': False, 'is_completed': False, 'is_done': False, 'weight': 20},
+            {'name': 'On Hold', 'sequence': 30, 'fold': True, 'is_completed': False, 'is_done': False, 'weight': 30},
+            {'name': 'Completed', 'sequence': 40, 'fold': True, 'is_completed': True, 'is_done': False, 'weight': 40},
+            {'name': 'Done', 'sequence': 50, 'fold': True, 'is_completed': False, 'is_done': True, 'weight': 50},
         ]
 
         for stage_vals in default_stages:
@@ -99,15 +105,17 @@ class Project(models.Model):
     # -----------------------------
     # COMPUTES
     # -----------------------------
-    @api.depends('task_ids.stage_id.is_done')
+    @api.depends('task_ids.stage_id.is_done', 'task_ids.stage_id.weight')
     def _compute_project_state(self):
         for project in self:
             if project.task_ids and all(t.stage_id.is_done for t in project.task_ids):
                 project.state = 'done'
+            elif project.task_ids and all(t.stage_id.weight < 40 for t in project.task_ids):
+                project.state = 'open'
             else:
                 project.state = 'open'
 
-    @api.depends('task_ids.stage_id.is_done')
+    @api.depends('task_ids.stage_id.weight')
     def _compute_task_progress(self):
         for project in self:
             tasks = project.task_ids
@@ -115,8 +123,15 @@ class Project(models.Model):
                 project.task_progress = 0.0
                 continue
 
-            done_count = sum(1 for t in tasks if t.stage_id.is_done)
-            project.task_progress = (done_count / len(tasks)) * 100
+            # Total weight of all tasks based on stage
+            total_weight = sum(t.stage_id.weight for t in tasks)
+            # Maximum possible weight per task
+            stage = project.env['project.task.type'].search([], order='weight desc', limit=1)
+            max_weight = stage.weight if stage else 50
+            max_total_weight = len(tasks) * max_weight
+
+            project.task_progress = (total_weight / max_total_weight) * 100
+
 
 # ---------------------------------------------------------
 # Task
@@ -124,7 +139,7 @@ class Project(models.Model):
 class ProjectTask(models.Model):
     _inherit = 'project.task'
 
-    description_admin = fields.Text(
+    description = fields.Text(
         string='Admin Description',
         help="Admins can describe the task here."
     )
@@ -132,8 +147,53 @@ class ProjectTask(models.Model):
     progress = fields.Float(
         string='Progress (%)',
         help="Progress of the task, editable by admins only.",
+        compute='_compute_progress',
+        readonly=True,
+        store=True
     )
-    
+
+    previous_stage_id = fields.Many2one(
+        'project.task.type',
+        string='Previous Stage',
+        compute='_compute_previous_stage',
+        store=True
+    )
+
+    stage_weight = fields.Integer(
+        string='Stage Weight',
+        help="Weight for this task (default from stage, editable by admin)",
+        compute='_compute_stage_weight',
+        inverse='_inverse_stage_weight',
+        store=True
+    )
+
+    # -----------------------------
+    # COMPUTES
+    # -----------------------------
+    @api.depends('stage_id')
+    def _compute_previous_stage(self):
+        for task in self:
+            task.previous_stage_id = task.stage_id
+
+    @api.depends('stage_id', 'stage_id.weight')
+    def _compute_stage_weight(self):
+        for task in self:
+            # Default: use stage weight
+            task.stage_weight = task.stage_id.weight if task.stage_id else 0
+
+    def _inverse_stage_weight(self):
+        for task in self:
+            stage = self.env['project.task.type'].search([], order='weight desc', limit=1)
+            max_weight = stage.weight if stage else 50
+            task.progress = (task.stage_weight / max_weight) * 100
+
+    @api.depends('stage_weight')
+    def _compute_progress(self):
+        stage = self.env['project.task.type'].search([], order='weight desc', limit=1)
+        max_weight = stage.weight if stage else 50
+        for task in self:
+            task.progress = (task.stage_weight / max_weight) * 100
+
     # -----------------------------
     # HELPERS
     # -----------------------------
@@ -148,7 +208,11 @@ class ProjectTask(models.Model):
     # WRITE OVERRIDE
     # -----------------------------
     def write(self, vals):
-        
+        if 'description' in vals:
+            for task in self:
+                if not self._is_admin_or_manager():
+                    raise UserError(_("Only administrators or task creators can edit the description."))
+
         if 'stage_id' in vals:
             for task in self:
                 new_stage = self.env['project.task.type'].browse(vals['stage_id'])
@@ -194,6 +258,15 @@ class ProjectTask(models.Model):
                         _("You can only move tasks assigned to you.")
                     )
 
+                # Update task-level weight only if it was equal to old stage weight
+                if task.stage_weight == (old_stage.weight if old_stage else 0):
+                    task.stage_weight = new_stage.weight
+
+                # Update progress
+                stage = self.env['project.task.type'].search([], order='weight desc', limit=1)
+                max_weight = stage.weight if stage else 50
+                task.progress = (task.stage_weight / max_weight) * 100
+
         return super().write(vals)
 
     # -----------------------------
@@ -215,4 +288,3 @@ class ProjectTask(models.Model):
                 raise UserError(_("Only the task assigner can approve this task."))
 
             task.stage_id = done_stage.id
-            
